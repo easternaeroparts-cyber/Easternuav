@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /portal/
 
-Sitemap: https://www.easternuav.com/sitemap.xml
+Sitemap: https://easternuav.com/sitemap.xml
