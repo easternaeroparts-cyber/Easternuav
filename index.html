@@ -74,14 +74,24 @@
         "Agricultural drone operations",
         "UAV equipment supply"
       ],
-      "contactPoint": [{
-        "@type": "ContactPoint",
-        "telephone": "+977-9810230070",
-        "email": "info@easternuav.com",
-        "contactType": "customer service",
-        "areaServed": ["NP", "AU"],
-        "availableLanguage": ["en", "ne"]
-      }]
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "telephone": "+977-9810230070",
+          "email": "info@easternuav.com",
+          "contactType": "customer service",
+          "areaServed": "NP",
+          "availableLanguage": ["en", "ne"]
+        },
+        {
+          "@type": "ContactPoint",
+          "telephone": "+61-456559907",
+          "email": "info@easternuav.com",
+          "contactType": "customer service",
+          "areaServed": "AU",
+          "availableLanguage": ["en"]
+        }
+      ]
     },
     {
       "@type": "WebSite",
@@ -144,251 +154,7 @@
   ]
 }
 </script>
-<style>
-:root{
-  --navy:#1D3461;
-  --navy-deep:#0D1B2A;
-  --navy-2:#1A2E45;
-  --red:#C0272D;
-  --red-dark:#a32126;
-  --ink:#1F2937;
-  --muted:#6B7280;
-  --line:#E5E7EB;
-  --grey:#F4F6F9;
-  --sky:#7EC8F5;
-  --max:1200px;
-  --shadow:0 2px 12px rgba(0,0,0,.06);
-  --shadow-lg:0 10px 34px rgba(13,27,42,.10);
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;scroll-padding-top:92px}
-body{margin:0;background:#fff;color:var(--ink);
-  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:16px;line-height:1.65;
-  -webkit-font-smoothing:antialiased}
-img{max-width:100%;display:block}
-a{color:inherit}
-h1,h2,h3,h4,h5{font-weight:700;line-height:1.14;margin:0;letter-spacing:-.01em}
-p{margin:0 0 1em}
-.wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
-[hidden]{display:none!important}
-
-.eyebrow{font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--red);
-  margin:0 0 16px;padding-left:14px;border-left:4px solid var(--red);line-height:1.4}
-.on-navy .eyebrow{color:#fff;border-left-color:var(--red)}
-section{padding:76px 0}
-.sec-head{max-width:760px;margin-bottom:44px}
-.sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
-.sec-head.center .eyebrow{display:inline-block;border-left:0;padding:0;border-bottom:3px solid var(--red);padding-bottom:6px}
-h2{font-size:clamp(30px,3.8vw,42px)}
-.sec-head p{color:var(--muted);font-size:17.5px;margin:16px 0 0}
-.grey{background:var(--grey)}
-.on-navy{background:var(--navy);color:#fff}
-.on-navy .sec-head p{color:rgba(255,255,255,.72)}
-.on-navy h2,.on-navy h3{color:#fff}
-
-/* buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:14px 26px;border-radius:10px;
-  text-decoration:none;border:2px solid transparent;font-size:15px;font-weight:700;cursor:pointer;
-  font-family:inherit;transition:background .18s,color .18s,border-color .18s,transform .15s}
-.btn:hover{transform:translateY(-1px)}
-.btn-red{background:var(--red);border-color:var(--red);color:#fff}
-.btn-red:hover{background:var(--red-dark);border-color:var(--red-dark)}
-.btn-navy{background:var(--navy);border-color:var(--navy);color:#fff}
-.btn-navy:hover{background:#16294d}
-.btn-outline{border-color:var(--line);color:var(--ink);background:#fff}
-.btn-outline:hover{border-color:var(--navy);color:var(--navy)}
-.btn-white-outline{border-color:rgba(255,255,255,.55);color:#fff;background:transparent}
-.btn-white-outline:hover{border-color:#fff;background:rgba(255,255,255,.12)}
-.btn-sm{padding:11px 18px;font-size:14px;border-radius:9px}
-
-/* ---------- header ---------- */
-header{position:sticky;top:0;z-index:80;background:#fff;border-bottom:1px solid var(--line);
-  box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.nav{display:flex;align-items:center;gap:26px;height:84px}
-.brand{display:flex;align-items:center;gap:14px;text-decoration:none;flex:none}
-.brand img{height:48px;width:auto;flex:none}
-.foot .brand img{height:52px}
-.brand b{display:block;font-size:26px;font-weight:700;line-height:1;color:var(--navy);letter-spacing:-.01em}
-.brand b em{font-style:normal;color:var(--red)}
-.brand i{display:block;font-style:normal;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--muted);margin-top:4px;font-weight:600}
-.nav-links{display:flex;gap:24px;margin-left:auto;align-items:center}
-.nav-links>a{text-decoration:none;font-size:14.5px;font-weight:600;color:var(--ink);transition:color .18s;white-space:nowrap}
-.nav-links>a:hover{color:var(--red)}
-
-/* mega menu */
-.navitem{position:relative}
-.navbtn{background:none;border:0;padding:0;cursor:pointer;font-family:inherit;font-size:14.5px;font-weight:600;
-  color:var(--ink);display:flex;align-items:center;gap:7px;white-space:nowrap;transition:color .18s}
-.navbtn:hover,.navitem.open>.navbtn{color:var(--red)}
-.navbtn svg{width:10px;height:10px;transition:transform .2s;flex:none}
-.navitem.open>.navbtn svg{transform:rotate(180deg)}
-.mega{position:absolute;top:calc(100% + 26px);left:-26px;width:min(920px,calc(100vw - 48px));
-  background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px 30px 22px;
-  box-shadow:var(--shadow-lg);display:none;z-index:90}
-.mega::before{content:"";position:absolute;left:0;right:0;top:-32px;height:32px}
-.mega.sm{width:340px}
-.navitem.open .mega{display:block}
-.mega-inner{display:grid;grid-template-columns:repeat(3,1fr);gap:0 34px}
-.mega.sm .mega-inner{grid-template-columns:1fr}
-.mcol{padding:20px 0;border-top:1px solid var(--line)}
-.mega-inner>.mcol:nth-child(-n+3){border-top:0}
-.mega.sm .mcol{border-top:0;padding:12px 0}
-.mcol h4{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:10px}
-.mega:not(.sm) .mcol h4{min-height:2.2em}
-.mcol a{display:block;padding:6px 0;font-size:14.5px;font-weight:500;color:var(--ink);text-decoration:none;transition:color .18s}
-.mcol a:hover{color:var(--red)}
-.mega-foot{border-top:1px solid var(--line);margin-top:8px;padding-top:18px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
-.mega-foot span{color:var(--muted);font-size:14px}
-
-.burger{display:none;margin-left:auto;background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px 12px;cursor:pointer}
-.burger span{display:block;width:20px;height:2px;background:var(--navy);margin:4px 0}
-
-/* ---------- hero ---------- */
-.hero{position:relative;padding:0;color:#fff;overflow:hidden;background:var(--navy-deep)}
-.hero-bg{position:absolute;inset:0;background-size:cover;background-position:center 38%}
-.hero-bg::after{content:"";position:absolute;inset:0;
-  background:linear-gradient(90deg,rgba(13,27,42,.88) 0%,rgba(13,27,42,.78) 40%,rgba(13,27,42,.44) 74%,rgba(13,27,42,.26) 100%)}
-.hero .wrap{position:relative;z-index:2;padding-top:104px;padding-bottom:84px}
-.hero h1{font-size:clamp(38px,5.4vw,62px);max-width:16ch}
-.hero h1 em{font-style:normal;color:#ff5a60}
-.hero .lede{font-size:19px;color:rgba(255,255,255,.86);max-width:600px;margin:22px 0 32px}
-.hero-cta{display:flex;gap:14px;flex-wrap:wrap}
-.hero-stats{display:flex;gap:52px;flex-wrap:wrap;margin-top:52px;padding-top:34px;border-top:1px solid rgba(255,255,255,.22)}
-.hero-stats div b{display:block;font-size:24px;font-weight:700;color:#fff;line-height:1.2}
-.hero-stats div span{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.7)}
-
-/* ---------- strip ---------- */
-.strip{background:var(--navy);color:#fff;padding:20px 0}
-.strip .wrap{display:flex;gap:38px;flex-wrap:wrap;justify-content:center;align-items:center}
-.strip span{font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.85)}
-
-/* ---------- cards ---------- */
-.grid{display:grid;gap:26px}
-.g2{grid-template-columns:repeat(2,1fr)}
-.g3{grid-template-columns:repeat(3,1fr)}
-.g4{grid-template-columns:repeat(4,1fr)}
-.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:32px 28px;box-shadow:var(--shadow);
-  transition:box-shadow .22s,transform .22s}
-.card:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px)}
-.card h3{font-size:21px;margin-bottom:10px;color:var(--navy)}
-.card h4{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:12px}
-.card p{color:var(--muted);font-size:15.5px;margin:0}
-.card .ic{width:52px;height:52px;border-radius:12px;background:rgba(192,39,45,.09);color:var(--red);
-  display:flex;align-items:center;justify-content:center;margin-bottom:20px}
-.card .ic svg{width:26px;height:26px}
-.card ul{margin:0;padding:0;list-style:none}
-.card ul li{color:var(--muted);font-size:15px;padding:9px 0;border-bottom:1px solid var(--line);display:flex;gap:10px}
-.card ul li:last-child{border-bottom:0}
-.card ul li::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:var(--red);margin-top:9px}
-.card ul li b{color:var(--ink);font-weight:600}
-
-/* photo cards */
-.pcard{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);
-  transition:box-shadow .22s,transform .22s;display:flex;flex-direction:column}
-.pcard:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px)}
-.pcard .ph{height:190px;width:100%;object-fit:cover;display:block;background:linear-gradient(150deg,var(--navy),var(--navy-2))}
-.pcard .bd{padding:24px 24px 28px}
-.pcard h3{font-size:20px;margin-bottom:9px;color:var(--navy)}
-.pcard p{color:var(--muted);font-size:15px;margin:0}
-
-/* split */
-.split{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
-.split .shot{border-radius:18px;overflow:hidden;box-shadow:var(--shadow-lg);height:420px;
-  background:linear-gradient(150deg,var(--navy),var(--navy-2));background-size:cover;background-position:center}
-.split p{color:var(--muted);font-size:17px}
-.on-navy .split p{color:rgba(255,255,255,.78)}
-.mini{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:28px}
-.mini div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
-.on-navy .mini div{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18)}
-.mini b{display:block;font-size:16px;color:var(--navy);margin-bottom:3px}
-.on-navy .mini b{color:#fff}
-.mini span{font-size:14px;color:var(--muted);line-height:1.5}
-.on-navy .mini span{color:rgba(255,255,255,.7)}
-
-/* tracks */
-.track{background:#fff;border:1px solid var(--line);border-left:4px solid var(--red);border-radius:14px;padding:28px}
-.track .flag{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:700;margin-bottom:8px}
-.track h3{font-size:22px;color:var(--navy);margin-bottom:10px}
-.track p{color:var(--muted);font-size:15.5px;margin:0}
-.note{background:#fff;border:1px solid var(--line);border-left:4px solid var(--navy);border-radius:12px;
-  padding:22px 24px;margin-top:32px;color:var(--muted);font-size:15.5px;max-width:900px}
-
-/* faq */
-details{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow)}
-summary{cursor:pointer;padding:20px 24px;font-size:17.5px;font-weight:700;color:var(--navy);list-style:none;
-  display:flex;justify-content:space-between;gap:18px;align-items:center}
-summary::-webkit-details-marker{display:none}
-summary::after{content:"+";color:var(--red);font-size:26px;font-weight:400;flex:none;line-height:1}
-details[open] summary::after{content:"–"}
-details .body{padding:0 24px 22px;color:var(--muted);font-size:15.5px}
-details .body p:last-child{margin-bottom:0}
-
-/* cta band */
-.cta{background:linear-gradient(160deg,var(--navy-deep) 0%,var(--navy-2) 100%);color:#fff;text-align:center}
-.cta h2{font-size:clamp(28px,3.6vw,40px);margin-bottom:14px}
-.cta p{color:rgba(255,255,255,.78);font-size:18px;max-width:640px;margin:0 auto 30px}
-.cta .btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-
-/* contact */
-.contact-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px}
-form{background:#fff;border:1px solid var(--line);border-radius:16px;padding:30px;box-shadow:var(--shadow)}
-label{display:block;font-size:13px;font-weight:700;color:var(--ink);margin:0 0 7px}
-input,select,textarea{width:100%;background:#fff;border:1px solid var(--line);border-radius:9px;color:var(--ink);
-  padding:13px 14px;font:inherit;font-size:15.5px;margin-bottom:16px}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(29,52,97,.10)}
-textarea{min-height:116px;resize:vertical}
-.office{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;margin-bottom:16px;box-shadow:var(--shadow)}
-.office .flag{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:700;margin-bottom:8px}
-.office h4{font-size:20px;color:var(--navy);margin-bottom:8px}
-.office p{color:var(--muted);font-size:15.5px;margin:0 0 10px}
-.big-link{display:inline-block;font-size:21px;font-weight:700;color:var(--navy);text-decoration:none}
-.big-link:hover{color:var(--red)}
-
-/* footer */
-footer{background:var(--navy-deep);color:rgba(255,255,255,.72);padding:56px 0 28px}
-.foot{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap}
-.foot>div:first-child{max-width:390px}
-.foot .brand b{color:#fff}
-.foot .brand i{color:rgba(255,255,255,.5)}
-.foot p{font-size:14.5px;color:rgba(255,255,255,.62)}
-.foot a{color:rgba(255,255,255,.72);text-decoration:none}
-.foot a:hover{color:#fff}
-.foot-links{display:flex;gap:52px;flex-wrap:wrap}
-.foot-links h5{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:#fff;margin:0 0 14px}
-.foot-links a{display:block;font-size:14.5px;padding:5px 0}
-.legal{border-top:1px solid rgba(255,255,255,.14);margin-top:40px;padding-top:22px;display:flex;
-  justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13.5px;color:rgba(255,255,255,.5)}
-
-@media(max-width:1040px){ .nav-links{gap:18px} .nav-links>a,.navbtn{font-size:13.5px} }
-@media(max-width:920px){
-  section{padding:56px 0}
-  .hero .wrap{padding-top:64px;padding-bottom:56px}
-  .hero-bg::after{background:linear-gradient(180deg,rgba(13,27,42,.72),rgba(13,27,42,.90))}
-  .split,.contact-grid{grid-template-columns:1fr;gap:34px}
-  .split .shot{height:280px;order:-1}
-  .g4,.g3{grid-template-columns:repeat(2,1fr)}
-  .hero-stats{gap:30px}
-  .nav{height:74px}
-  .nav-links{display:none;position:absolute;top:74px;left:0;right:0;flex-direction:column;align-items:stretch;
-    gap:0;background:#fff;border-bottom:1px solid var(--line);padding:8px 24px 22px;
-    max-height:calc(100vh - 74px);overflow-y:auto;box-shadow:0 14px 28px rgba(0,0,0,.10)}
-  .nav-links.open{display:flex}
-  .nav-links>a{padding:14px 0;border-bottom:1px solid var(--line)}
-  .nav-links .btn{margin-top:14px}
-  .burger{display:block}
-  .navitem{width:100%}
-  .navbtn{width:100%;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
-  .mega,.mega.sm{position:static;width:auto;left:auto;border:0;box-shadow:none;padding:2px 0 12px;border-radius:0}
-  .mega::before{display:none}
-  .mega-inner,.mega.sm .mega-inner{grid-template-columns:1fr;gap:0}
-  .mcol,.mega-inner>.mcol:nth-child(-n+3){border-top:0;padding:10px 0 4px}
-  .mcol a{padding:8px 0 8px 14px;border-left:2px solid var(--line)}
-  .mega-foot{border-top:0;padding-top:6px}
-}
-@media(max-width:640px){ .g2,.g3,.g4,.mini{grid-template-columns:1fr} }
-@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
-</style>
+<link rel="stylesheet" href="/css/site.css">
 </head>
 <body>
 
@@ -409,43 +175,43 @@ footer{background:var(--navy-deep);color:rgba(255,255,255,.72);padding:56px 0 28
           <div class="mega-inner">
             <div class="mcol">
               <h4>Foundation</h4>
-              <a href="#foundation">Introduction to Drones</a>
-              <a href="#foundation">Drone Safety &amp; Airspace Awareness</a>
-              <a href="#foundation">Recreational to Commercial</a>
+              <a href="/courses/introduction-to-drones/">Introduction to Drones</a>
+              <a href="/courses/drone-safety-airspace-awareness/">Drone Safety &amp; Airspace Awareness</a>
+              <a href="/courses/recreational-to-commercial/">Recreational to Commercial</a>
             </div>
             <div class="mcol">
               <h4>Licensing</h4>
-              <a href="#licensing">Remote Pilot Licence</a>
-              <a href="#licensing">Sub-25 kg Multirotor</a>
-              <a href="#licensing">Aeronautical Radio Operator Certificate</a>
-              <a href="#licensing">Licence Conversion</a>
+              <a href="/courses/remote-pilot-licence/">Remote Pilot Licence</a>
+              <a href="/courses/sub-25kg-multirotor/">Sub-25 kg Multirotor</a>
+              <a href="/courses/aeronautical-radio-operator-certificate/">Aeronautical Radio Operator Certificate</a>
+              <a href="/courses/licence-conversion/">Licence Conversion</a>
             </div>
             <div class="mcol">
               <h4>Endorsements</h4>
-              <a href="#endorsements">Sub-150 kg Multirotor</a>
-              <a href="#endorsements">VTOL &amp; Powered Lift</a>
-              <a href="#endorsements">Agriculture &amp; Spraying</a>
-              <a href="#endorsements">Night Operations</a>
+              <a href="/courses/sub-150kg-multirotor/">Sub-150 kg Multirotor</a>
+              <a href="/courses/vtol-powered-lift/">VTOL &amp; Powered Lift</a>
+              <a href="/courses/agriculture-spraying/">Agriculture &amp; Spraying</a>
+              <a href="/courses/night-operations/">Night Operations</a>
             </div>
             <div class="mcol">
               <h4>Specialist</h4>
-              <a href="#specialist">Beyond Visual Line of Sight (BVLOS)</a>
-              <a href="#specialist">Mountain &amp; High-Altitude Operations</a>
-              <a href="#specialist">Emergency Services &amp; Response</a>
-              <a href="#specialist">Thermal &amp; Sensor Operations</a>
+              <a href="/courses/bvlos/">Beyond Visual Line of Sight (BVLOS)</a>
+              <a href="/courses/mountain-high-altitude-operations/">Mountain &amp; High-Altitude Operations</a>
+              <a href="/courses/emergency-services-response/">Emergency Services &amp; Response</a>
+              <a href="/courses/thermal-sensor-operations/">Thermal &amp; Sensor Operations</a>
             </div>
             <div class="mcol">
               <h4>Instructor &amp; Organisational</h4>
-              <a href="#instructor">Instructor &amp; Assessor Program</a>
-              <a href="#instructor">Operator Certificate Establishment</a>
-              <a href="#instructor">Chief Remote Pilot Preparation</a>
+              <a href="/courses/instructor-assessor/">Instructor &amp; Assessor Program</a>
+              <a href="/courses/operator-certificate-establishment/">Operator Certificate Establishment</a>
+              <a href="/courses/chief-remote-pilot/">Chief Remote Pilot Preparation</a>
             </div>
             <div class="mcol">
               <h4>Groups &amp; Institutions</h4>
-              <a href="#groups">Corporate &amp; Agency Programs</a>
-              <a href="#groups">School &amp; University Programs</a>
-              <a href="#groups">Cooperative &amp; NGO Intakes</a>
-              <a href="#groups">Recurrent &amp; Currency Training</a>
+              <a href="/courses/corporate-agency-programs/">Corporate &amp; Agency Programs</a>
+              <a href="/courses/school-university-programs/">School &amp; University Programs</a>
+              <a href="/courses/cooperative-ngo-intakes/">Cooperative &amp; NGO Intakes</a>
+              <a href="/courses/recurrent-currency-training/">Recurrent &amp; Currency Training</a>
             </div>
           </div>
           <div class="mega-foot">
@@ -615,53 +381,53 @@ footer{background:var(--navy-deep);color:rgba(255,255,255,.72);padding:56px 0 28
       <article class="card" id="foundation">
         <h4>Foundation</h4>
         <ul>
-          <li><b>Introduction to Drones</b> — controls, airmanship and safe first flight</li>
-          <li><b>Drone Safety &amp; Airspace Awareness</b> — where you may fly and why</li>
-          <li><b>Recreational to Commercial</b> — bridging course for self-taught pilots</li>
+          <li><b><a href="/courses/introduction-to-drones/">Introduction to Drones</a></b> — controls, airmanship and safe first flight</li>
+          <li><b><a href="/courses/drone-safety-airspace-awareness/">Drone Safety &amp; Airspace Awareness</a></b> — where you may fly and why</li>
+          <li><b><a href="/courses/recreational-to-commercial/">Recreational to Commercial</a></b> — bridging course for self-taught pilots</li>
         </ul>
       </article>
       <article class="card" id="licensing">
         <h4>Licensing</h4>
         <ul>
-          <li><b>Remote Pilot Licence</b> — full theory and practical to licence standard</li>
-          <li><b>Sub-25 kg Multirotor</b> — the standard commercial category</li>
-          <li><b>Aeronautical Radio Operator Certificate</b> — radio procedure and phraseology</li>
-          <li><b>Licence Conversion</b> — for pilots holding a licence from another authority</li>
+          <li><b><a href="/courses/remote-pilot-licence/">Remote Pilot Licence</a></b> — full theory and practical to licence standard</li>
+          <li><b><a href="/courses/sub-25kg-multirotor/">Sub-25 kg Multirotor</a></b> — the standard commercial category</li>
+          <li><b><a href="/courses/aeronautical-radio-operator-certificate/">Aeronautical Radio Operator Certificate</a></b> — radio procedure and phraseology</li>
+          <li><b><a href="/courses/licence-conversion/">Licence Conversion</a></b> — for pilots holding a licence from another authority</li>
         </ul>
       </article>
       <article class="card" id="endorsements">
         <h4>Endorsements</h4>
         <ul>
-          <li><b>Sub-150 kg Multirotor</b> — heavier airframe category</li>
-          <li><b>VTOL &amp; Powered Lift</b> — hybrid and transitioning platforms</li>
-          <li><b>Agriculture &amp; Spraying</b> — payload, calibration and chemical handling</li>
-          <li><b>Night Operations</b> — procedures and lighting requirements</li>
+          <li><b><a href="/courses/sub-150kg-multirotor/">Sub-150 kg Multirotor</a></b> — heavier airframe category</li>
+          <li><b><a href="/courses/vtol-powered-lift/">VTOL &amp; Powered Lift</a></b> — hybrid and transitioning platforms</li>
+          <li><b><a href="/courses/agriculture-spraying/">Agriculture &amp; Spraying</a></b> — payload, calibration and chemical handling</li>
+          <li><b><a href="/courses/night-operations/">Night Operations</a></b> — procedures and lighting requirements</li>
         </ul>
       </article>
       <article class="card" id="specialist">
         <h4>Specialist</h4>
         <ul>
-          <li><b>Beyond Visual Line of Sight</b> — BVLOS operations and the approval case</li>
-          <li><b>Mountain &amp; High-Altitude Operations</b> — density altitude, wind, terrain</li>
-          <li><b>Emergency Services &amp; Response</b> — rapid tasking and scene mapping</li>
-          <li><b>Thermal &amp; Sensor Operations</b> — flying the payload, not just the aircraft</li>
+          <li><b><a href="/courses/bvlos/">Beyond Visual Line of Sight</a></b> — BVLOS operations and the approval case</li>
+          <li><b><a href="/courses/mountain-high-altitude-operations/">Mountain &amp; High-Altitude Operations</a></b> — density altitude, wind, terrain</li>
+          <li><b><a href="/courses/emergency-services-response/">Emergency Services &amp; Response</a></b> — rapid tasking and scene mapping</li>
+          <li><b><a href="/courses/thermal-sensor-operations/">Thermal &amp; Sensor Operations</a></b> — flying the payload, not just the aircraft</li>
         </ul>
       </article>
       <article class="card" id="instructor">
         <h4>Instructor &amp; Organisational</h4>
         <ul>
-          <li><b>Instructor &amp; Assessor Program</b> — instructional technique and competency assessment</li>
-          <li><b>Operator Certificate Establishment</b> — building the organisation behind the approval</li>
-          <li><b>Chief Remote Pilot Preparation</b> — the accountable role and what it carries</li>
+          <li><b><a href="/courses/instructor-assessor/">Instructor &amp; Assessor Program</a></b> — instructional technique and competency assessment</li>
+          <li><b><a href="/courses/operator-certificate-establishment/">Operator Certificate Establishment</a></b> — building the organisation behind the approval</li>
+          <li><b><a href="/courses/chief-remote-pilot/">Chief Remote Pilot Preparation</a></b> — the accountable role and what it carries</li>
         </ul>
       </article>
       <article class="card" id="groups">
         <h4>Groups &amp; Institutions</h4>
         <ul>
-          <li><b>Corporate &amp; Agency Programs</b> — on your sites, aircraft and procedures</li>
-          <li><b>School &amp; University Programs</b> — structured introductory delivery</li>
-          <li><b>Cooperative &amp; NGO Intakes</b> — group training for field teams</li>
-          <li><b>Recurrent &amp; Currency Training</b> — keeping a licensed team current</li>
+          <li><b><a href="/courses/corporate-agency-programs/">Corporate &amp; Agency Programs</a></b> — on your sites, aircraft and procedures</li>
+          <li><b><a href="/courses/school-university-programs/">School &amp; University Programs</a></b> — structured introductory delivery</li>
+          <li><b><a href="/courses/cooperative-ngo-intakes/">Cooperative &amp; NGO Intakes</a></b> — group training for field teams</li>
+          <li><b><a href="/courses/recurrent-currency-training/">Recurrent &amp; Currency Training</a></b> — keeping a licensed team current</li>
         </ul>
       </article>
     </div>
@@ -871,22 +637,74 @@ footer{background:var(--navy-deep);color:rgba(255,255,255,.72);padding:56px 0 28
 <!-- CONTACT -->
 <section id="contact" class="grey">
   <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">Contact</p>
-      <h2>Start a conversation</h2>
-      <p>Tell us what you need — a course place, a flying job, a fleet, or a framework — and we'll come back to you with something specific.</p>
-    </div>
     <div class="contact-grid">
+
+      <div>
+        <span class="pill">Get in Touch</span>
+        <h2 class="contact-h">Let's Talk Drones</h2>
+        <p class="contact-lede">Whether it's a course place, a flying job, a fleet to specify or an approval to build — tell us what you're trying to achieve and we'll come back with something specific.</p>
+
+        <div class="crow">
+          <span class="tile red"><svg viewBox="0 0 24 24" fill="none"><path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 6.5 6.5L17 13l4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 3 5.2 2 2 0 0 1 5 3h1.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+          <div>
+            <h5>Phone</h5>
+            <div class="cline"><a href="tel:+9779810230070">+977 9810 230070</a> <span>Nepal</span></div>
+            <div class="cline"><a href="tel:+61456559907">+61 456 559 907</a> <span>Australia</span></div>
+          </div>
+        </div>
+
+        <div class="crow">
+          <span class="tile red"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div>
+            <h5>Email</h5>
+            <div class="cline"><a href="mailto:info@easternuav.com">info@easternuav.com</a> <span>All enquiries</span></div>
+          </div>
+        </div>
+
+        <div class="crow">
+          <span class="tile green"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.6 2 2.2 6.4 2.2 11.84c0 1.94.52 3.76 1.42 5.32L2 22l4.96-1.58a9.8 9.8 0 0 0 5.08 1.4h.01c5.43 0 9.84-4.4 9.84-9.84S17.47 2 12.04 2zm5.76 14a2.5 2.5 0 0 1-1.64 1.14c-.43.08-.98.14-2.85-.6-2.4-.95-3.94-3.36-4.06-3.52-.12-.16-.98-1.3-.98-2.48s.62-1.76.84-2c.22-.24.48-.3.64-.3l.46.01c.15 0 .35-.06.54.41l.74 1.8c.06.13.1.28.02.44l-.3.46-.22.24c-.1.1-.2.21-.09.41.12.2.52.86 1.12 1.4.77.68 1.42.9 1.62 1 .2.1.32.08.44-.05l.63-.73c.14-.17.26-.13.44-.07l1.72.82c.19.09.31.13.36.21.05.08.05.47-.13.98z"/></svg></span>
+          <div>
+            <h5>WhatsApp</h5>
+            <a class="wa" href="https://wa.me/9779810230070" target="_blank" rel="noopener">Message us on WhatsApp</a>
+          </div>
+        </div>
+
+        <p class="sub-h">Our Offices</p>
+        <div class="offices">
+          <div class="ocard">
+            <div class="flag">🇳🇵</div>
+            <b>Kathmandu</b><span class="place">Bagmati, Nepal</span>
+            <span class="clock" id="clk-np">—</span><span class="tz">Nepal Time</span>
+          </div>
+          <div class="ocard">
+            <div class="flag">🇦🇺</div>
+            <b>Brisbane</b><span class="place">QLD, Australia</span>
+            <span class="clock" id="clk-au">—</span><span class="tz">AEST</span>
+          </div>
+        </div>
+      </div>
+
       <form id="enquiry">
-        <label for="name">Name</label>
-        <input id="name" name="name" type="text" required placeholder="Your full name">
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" required placeholder="you@example.com">
-        <label for="phone">Phone <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-        <input id="phone" name="phone" type="tel" placeholder="Best number to reach you">
-        <label for="org">Organisation <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-        <input id="org" name="org" type="text" placeholder="Company, agency or institution">
-        <label for="topic">I'm enquiring about</label>
+        <h3>Send Us a Message</h3>
+        <div class="frow">
+          <div>
+            <label for="name">Full Name *</label>
+            <input id="name" name="name" type="text" required placeholder="Your full name">
+          </div>
+          <div>
+            <label for="org">Organisation <span class="opt">(optional)</span></label>
+            <input id="org" name="org" type="text" placeholder="Company, agency or institution">
+          </div>
+          <div>
+            <label for="email">Email Address *</label>
+            <input id="email" name="email" type="email" required placeholder="you@company.com">
+          </div>
+          <div>
+            <label for="phone">Phone Number</label>
+            <input id="phone" name="phone" type="tel" placeholder="+977 000 000 0000">
+          </div>
+        </div>
+        <label for="topic">Subject</label>
         <select id="topic" name="topic">
           <option>Pilot training</option>
           <option>Commercial drone services</option>
@@ -894,32 +712,11 @@ footer{background:var(--navy-deep);color:rgba(255,255,255,.72);padding:56px 0 28
           <option>Consulting and approvals</option>
           <option>Something else</option>
         </select>
-        <label for="msg">Details</label>
-        <textarea id="msg" name="msg" placeholder="Location, timeframe, and what you're trying to achieve."></textarea>
-        <button class="btn btn-red" type="submit" style="width:100%">Send Enquiry</button>
-        <p style="font-size:13.5px;color:var(--muted);margin:14px 0 0">This opens your email client with the message ready to send.</p>
+        <label for="msg">Message *</label>
+        <textarea id="msg" name="msg" required placeholder="Tell us your location, timeframe, and what you're trying to achieve…"></textarea>
+        <button class="btn btn-red" type="submit" style="width:100%">Send Message</button>
+        <p style="font-size:13.5px;color:var(--muted);margin:16px 0 0;text-align:center">We aim to respond within one business day.</p>
       </form>
-
-      <div>
-        <div class="office">
-          <p class="flag">Nepal</p>
-          <h4>Kathmandu</h4>
-          <p>Training delivery, commercial operations and regional support.</p>
-          <a class="big-link" href="tel:+9779810230070">+977 9810 230070</a>
-        </div>
-        <div class="office">
-          <p class="flag">Australia</p>
-          <h4>Brisbane, QLD</h4>
-          <p>Operations, supply coordination and regulatory advisory.</p>
-          <a class="big-link" href="mailto:info@easternuav.com">info@easternuav.com</a>
-        </div>
-        <div class="office">
-          <p class="flag">General Enquiries</p>
-          <h4>Email us</h4>
-          <p>We route your enquiry to the right team and aim to respond within one business day.</p>
-          <a class="big-link" href="mailto:info@easternuav.com">info@easternuav.com</a>
-        </div>
-      </div>
     </div>
   </div>
 </section>
@@ -935,7 +732,7 @@ footer{background:var(--navy-deep);color:rgba(255,255,255,.72);padding:56px 0 28
           <span><b style="color:#fff">Eastern UAV</b><i>An Eastern Aero Company</i></span>
         </a>
         <p>Drone pilot training, commercial UAV operations, equipment supply and regulatory consulting across Nepal and Australia.</p>
-        <p><a href="tel:+9779810230070">+977 9810 230070</a> &nbsp;·&nbsp; <a href="mailto:info@easternuav.com">info@easternuav.com</a></p>
+        <p><a href="tel:+9779810230070">+977 9810 230070</a> <span style="color:rgba(255,255,255,.4)">Nepal</span> &nbsp;·&nbsp; <a href="tel:+61456559907">+61 456 559 907</a> <span style="color:rgba(255,255,255,.4)">Australia</span></p><p><a href="mailto:info@easternuav.com">info@easternuav.com</a></p>
       </div>
       <div class="foot-links">
         <div>
@@ -970,6 +767,24 @@ footer{background:var(--navy-deep);color:rgba(255,255,255,.72);padding:56px 0 28
 
 <script>
 document.getElementById('yr').textContent = new Date().getFullYear();
+
+/* live office clocks — Kathmandu is UTC+5:45, so let Intl do the arithmetic */
+(function(){
+  var zones = [['clk-np','Asia/Kathmandu'], ['clk-au','Australia/Brisbane']];
+  function tick(){
+    zones.forEach(function(z){
+      var el = document.getElementById(z[0]);
+      if (!el) return;
+      try {
+        el.textContent = new Intl.DateTimeFormat('en-GB', {
+          timeZone: z[1], hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        }).format(new Date());
+      } catch (e) { el.textContent = ''; }
+    });
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
 
 var burger = document.getElementById('burger'), menu = document.getElementById('menu');
 burger.addEventListener('click', function(){
