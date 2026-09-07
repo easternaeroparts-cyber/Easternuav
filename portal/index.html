@@ -458,8 +458,10 @@ var CONFIG = {
         full_name: meta.full_name || null, phone: meta.phone || null,
         status: 'Active'
       };
-      sb.from('students').insert(fresh).then(function (ins) {
-        paintDetails(ins.error ? { email: user.email } : fresh);
+      /* read the row back — the student ID and location are filled in by the
+         database, so the object we sent doesn't have them yet */
+      sb.from('students').insert(fresh).select().maybeSingle().then(function (ins) {
+        paintDetails(ins.error ? { email: user.email } : (ins.data || fresh));
       });
     });
 

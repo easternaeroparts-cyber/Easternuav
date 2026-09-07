@@ -768,9 +768,12 @@ var CONFIG = {
     if (t.dataset.editStudent){
       var s = STATE.students.filter(function(x){return x.id===t.dataset.editStudent;})[0];
       var name = prompt('Full name', s.full_name||''); if(name===null) return;
-      var ref  = prompt('Student ID', s.student_ref||''); if(ref===null) return;
+      var ph   = prompt('Phone', s.phone||''); if(ph===null) return;
+      var ref  = prompt('Student ID (generated automatically — change only if you must)', s.student_ref||''); if(ref===null) return;
+      var loc  = prompt('Location', s.country||''); if(loc===null) return;
       var st   = prompt('Status (Active / Inactive)', s.status||'Active'); if(st===null) return;
-      sb.from('students').update({full_name:name, student_ref:ref, status:st}).eq('id', s.id).then(function(r){
+      sb.from('students').update({full_name:name, phone:ph, student_ref:ref,
+                                  country:loc, status:st}).eq('id', s.id).then(function(r){
         if(r.error) return flash(r.error.message,'err');
         flash('Student updated.'); loadStudents();
       });
