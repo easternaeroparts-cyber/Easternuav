@@ -19,7 +19,9 @@ body{background:var(--grey)}
 .atop .mark b{font-size:19px;font-weight:700;display:block;line-height:1}
 .atop .mark i{font-style:normal;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6);display:block;margin-top:3px}
 .atop .sp{margin-left:auto}
-.atop .me{font-size:13.5px;color:rgba(255,255,255,.75)}
+.atop .me{font-size:13.5px;color:rgba(255,255,255,.75);text-align:right;line-height:1.35}
+.atop .me em{font-style:normal;display:block;font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:#fff;font-weight:700}
 .btn-ghost-w{border:1px solid rgba(255,255,255,.45);color:#fff;background:none;padding:9px 15px;border-radius:8px;
   font:inherit;font-size:13px;font-weight:700;cursor:pointer}
 .btn-ghost-w:hover{background:rgba(255,255,255,.12)}
@@ -58,6 +60,8 @@ td b{color:var(--navy)}
 .badge.other{color:var(--muted);border-color:var(--line);background:var(--grey)}
 .badge.open{color:#1a6b47;border-color:#bde3d0;background:#e9f7f0}
 .badge.shut{color:#8e2226;border-color:#f3c2c2;background:#fdeaea}
+.badge.super{color:#8e2226;border-color:#f3c2c2;background:#fdeaea}
+.badge.instr{color:#1d4e89;border-color:#c3d7ef;background:#eaf2fb}
 
 .frow2{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
 .frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 18px}
@@ -73,10 +77,17 @@ textarea{min-height:90px;resize:vertical}
 .mini-btn.danger:hover{border-color:#8e2226;background:#fdeaea}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 
+.checkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:2px 18px;margin-bottom:18px}
+.checkgrid label{display:flex;align-items:flex-start;gap:9px;font-weight:400;font-size:14px;color:var(--ink);
+  padding:7px 0;margin:0;cursor:pointer}
+.checkgrid input{width:auto;margin:2px 0 0;flex:none}
+
 .msg{border-radius:10px;padding:12px 15px;font-size:14.5px;margin-bottom:16px}
 .msg.err{background:#fdeaea;border:1px solid #f3c2c2;color:#8e2226}
 .msg.ok{background:#e9f7f0;border:1px solid #bde3d0;color:#1a6b47}
 .empty{color:var(--muted);font-size:15px;border:1px dashed #d3d9e2;border-radius:12px;padding:22px;text-align:center;background:#fafbfc}
+.note{background:#eaf2fb;border:1px solid #c3d7ef;color:#1d4e89;border-radius:12px;padding:15px 18px;
+  font-size:14.5px;margin-bottom:24px}
 
 /* login */
 .login-shell{min-height:100vh;display:grid;place-items:center;padding:40px 20px;
@@ -150,12 +161,18 @@ textarea{min-height:90px;resize:vertical}
       <button class="tab" data-tab="courses">Courses</button>
       <button class="tab" data-tab="announcements">Announcements</button>
       <button class="tab" data-tab="resources">Documents</button>
+      <button class="tab" data-tab="staff" data-super hidden>Staff</button>
     </div>
   </div>
 
   <main>
     <div class="wrap">
       <div id="globalMsg" class="msg" hidden></div>
+      <div id="instrNote" class="note" hidden>
+        You are signed in as an <b>instructor</b>. You can see and mark the students on the courses assigned to you,
+        and post notices to those courses. The course catalogue, enrolments and shared documents are managed by the
+        super admin.
+      </div>
 
       <!-- OVERVIEW -->
       <section data-panel="overview">
@@ -171,7 +188,7 @@ textarea{min-height:90px;resize:vertical}
       <section data-panel="students" hidden>
         <div class="card">
           <h2>Students</h2>
-          <p class="hint">Everyone with a portal account. Students create their own login at
+          <p class="hint" id="stuHint">Everyone with a portal account. Students create their own login at
             <a href="/portal/">easternuav.com/portal/</a> — you enrol them here afterwards.</p>
           <input id="stuSearch" type="search" placeholder="Search by name, email or student ID…" style="max-width:340px">
           <div class="tbl-wrap" id="students"></div>
@@ -180,7 +197,7 @@ textarea{min-height:90px;resize:vertical}
 
       <!-- ENROLMENTS -->
       <section data-panel="enrolments" hidden>
-        <div class="card">
+        <div class="card" data-super hidden>
           <h2>Add an enrolment</h2>
           <p class="hint">Put a student on a course. Only courses marked open appear here.</p>
           <form id="enrolForm">
@@ -213,7 +230,7 @@ textarea{min-height:90px;resize:vertical}
           </form>
         </div>
         <div class="card">
-          <h2>All enrolments</h2>
+          <h2 id="enrolHead">All enrolments</h2>
           <p class="hint">Change status or progress and it updates on the student's dashboard immediately.</p>
           <div class="tbl-wrap" id="enrolments"></div>
         </div>
@@ -223,10 +240,10 @@ textarea{min-height:90px;resize:vertical}
       <section data-panel="courses" hidden>
         <div class="card">
           <h2>Course catalogue</h2>
-          <p class="hint">Which courses you're currently offering. Closed courses stay in the list but can't be enrolled into.</p>
+          <p class="hint" id="crsHint">Which courses you're currently offering. Closed courses stay in the list but can't be enrolled into.</p>
           <div class="tbl-wrap" id="courses"></div>
         </div>
-        <div class="card">
+        <div class="card" data-super hidden>
           <h2>Add a course</h2>
           <form id="courseForm">
             <div class="frow3">
@@ -249,10 +266,18 @@ textarea{min-height:90px;resize:vertical}
       <section data-panel="announcements" hidden>
         <div class="card">
           <h2>Post an announcement</h2>
-          <p class="hint">Appears on every student's dashboard.</p>
+          <p class="hint" id="annHint">Choose a course to reach only those students, or all students for a site-wide notice.</p>
           <form id="annForm">
-            <label for="anTitle">Title</label>
-            <input id="anTitle" required placeholder="October cohort timetable published">
+            <div class="frow2">
+              <div>
+                <label for="anCourse">Who sees it</label>
+                <select id="anCourse"></select>
+              </div>
+              <div>
+                <label for="anTitle">Title</label>
+                <input id="anTitle" required placeholder="October cohort timetable published">
+              </div>
+            </div>
             <label for="anBody">Message</label>
             <textarea id="anBody" required placeholder="Keep it short and specific."></textarea>
             <button class="btn btn-red" type="submit">Post announcement</button>
@@ -266,9 +291,9 @@ textarea{min-height:90px;resize:vertical}
 
       <!-- RESOURCES -->
       <section data-panel="resources" hidden>
-        <div class="card">
+        <div class="card" data-super hidden>
           <h2>Share a document or link</h2>
-          <p class="hint">Visible to all signed-in students. Host files in Google Drive and paste the share link.</p>
+          <p class="hint">Host files in Google Drive and paste the share link, set to "anyone with the link can view".</p>
           <form id="resForm">
             <div class="frow2">
               <div><label for="rTitle">Title</label><input id="rTitle" required placeholder="Course handbook (PDF)"></div>
@@ -306,6 +331,53 @@ textarea{min-height:90px;resize:vertical}
           <div class="tbl-wrap" id="resources"></div>
         </div>
       </section>
+
+      <!-- STAFF (super admin only) -->
+      <section data-panel="staff" hidden>
+        <div class="card">
+          <h2>Staff</h2>
+          <p class="hint">Who can reach this panel, and what they're allowed to do.
+            <b>Super admins</b> run everything. <b>Instructors</b> see only the students on courses you assign them,
+            and cannot change the catalogue, enrolments or documents.</p>
+          <div class="tbl-wrap" id="staff"></div>
+        </div>
+
+        <div class="card">
+          <h2>Add a staff member</h2>
+          <p class="hint">They sign up at <a href="/portal/">easternuav.com/portal/</a> first, like anyone else.
+            Once they've done that they appear in the list below and you can promote them.</p>
+          <form id="staffForm">
+            <div class="frow3">
+              <div>
+                <label for="sfPerson">Person</label>
+                <select id="sfPerson" required></select>
+              </div>
+              <div>
+                <label for="sfRole">Role</label>
+                <select id="sfRole">
+                  <option value="instructor">Instructor</option>
+                  <option value="super_admin">Super admin</option>
+                </select>
+              </div>
+              <div>
+                <label for="sfTitle">Job title <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+                <input id="sfTitle" placeholder="Chief Remote Pilot">
+              </div>
+            </div>
+            <button class="btn btn-red" type="submit">Add to staff</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Course assignments</h2>
+          <p class="hint">Which courses an instructor is responsible for. This is what decides which students they can
+            see and mark — an instructor with no courses assigned sees nothing.</p>
+          <label for="asWho">Instructor</label>
+          <select id="asWho" style="max-width:380px"></select>
+          <div class="checkgrid" id="asCourses"></div>
+          <button class="btn btn-red" id="asSave" type="button">Save assignments</button>
+        </div>
+      </section>
     </div>
   </main>
 </div>
@@ -328,7 +400,15 @@ var CONFIG = {
   if (!ok) { $('setupNotice').hidden = false; return; }
 
   var sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-  var STATE = { students: [], courses: [], enrolments: [], resources: [] };
+
+  /* ME.role is 'super_admin' or 'instructor'.
+     ME.teaches is the list of course slugs an instructor is assigned to —
+     the database enforces the same boundary, this is only so the screen matches. */
+  var ME    = { id:null, email:'', role:'instructor', teaches:[] };
+  var STATE = { students:[], courses:[], enrolments:[], resources:[], staff:[], assign:[] };
+
+  function isSuper(){ return ME.role === 'super_admin'; }
+  function canTeach(slug){ return isSuper() || ME.teaches.indexOf(slug) > -1; }
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -359,21 +439,43 @@ var CONFIG = {
   });
   $('signOut').addEventListener('click', function(){ sb.auth.signOut().then(function(){ location.reload(); }); });
 
-  /* only users listed in the admins table get in */
+  /* only rows in the staff table get in; their role decides what they see */
   function gate(user){
-    sb.from('admins').select('id').eq('id', user.id).maybeSingle().then(function(r){
+    sb.from('admins').select('id, full_name, role').eq('id', user.id).maybeSingle().then(function(r){
       if (!r.data) {
         sb.auth.signOut();
         var m=$('loginMsg');
-        m.textContent='That account is not an administrator. Students sign in at easternuav.com/portal/';
+        m.textContent='That account is not staff. Students sign in at easternuav.com/portal/';
         m.className='msg err'; m.hidden=false;
         $('loginView').hidden=false; $('appView').hidden=true;
         return;
       }
+      ME.id = user.id; ME.email = user.email; ME.role = r.data.role || 'instructor';
       $('loginView').hidden=true; $('appView').hidden=false;
-      $('me').textContent=user.email;
-      loadAll();
+      $('me').innerHTML = '<em>' + (isSuper()?'Super admin':'Instructor') + '</em>' + esc(user.email);
+      applyRole();
+
+      if (isSuper()) { ME.teaches = []; loadAll(); }
+      else {
+        sb.from('instructor_courses').select('course_slug').eq('staff_id', user.id).then(function(a){
+          ME.teaches = (a.data||[]).map(function(x){ return x.course_slug; });
+          loadAll();
+        });
+      }
     });
+  }
+
+  /* show or hide everything only a super admin may touch */
+  function applyRole(){
+    var superOnly = document.querySelectorAll('[data-super]');
+    [].forEach.call(superOnly, function(el){ el.hidden = !isSuper(); });
+    $('instrNote').hidden = isSuper();
+    if (!isSuper()) {
+      $('stuHint').textContent   = 'Students enrolled on the courses assigned to you.';
+      $('crsHint').textContent   = 'The full catalogue. The courses assigned to you are marked — only the super admin opens and closes them.';
+      $('enrolHead').textContent = 'Enrolments on my courses';
+      $('annHint').textContent   = 'Goes to the students on the course you choose. Only the super admin can post to everyone.';
+    }
   }
 
   /* ---------- tabs ---------- */
@@ -388,20 +490,22 @@ var CONFIG = {
   });
 
   /* ---------- load ---------- */
-  function loadAll(){ loadStudents(); loadCourses(); loadEnrolments(); loadAnnouncements(); loadResources(); }
+  function loadAll(){
+    loadStudents(); loadCourses(); loadEnrolments(); loadAnnouncements(); loadResources();
+    if (isSuper()) loadStaff();
+  }
 
   function loadStudents(){
     sb.from('students').select('*').order('full_name').then(function(r){
       STATE.students = r.data || [];
-      renderStudents();
-      fillStudentSelect();
-      renderStats();
+      renderStudents(); fillStudentSelect(); fillPersonSelect(); renderStats();
     });
   }
   function loadCourses(){
     sb.from('courses').select('*').order('category').then(function(r){
       STATE.courses = r.data || [];
-      renderCourses(); fillCourseSelect(); renderStats(); if(STATE.resources.length) renderResources(STATE.resources);
+      renderCourses(); fillCourseSelect(); renderStats(); renderAssignGrid();
+      if(STATE.resources.length) renderResources(STATE.resources);
     });
   }
   function loadEnrolments(){
@@ -416,23 +520,41 @@ var CONFIG = {
     });
   }
   function loadResources(){
-    sb.from('resources').select('*').order('section').order('sort_order').then(function(r){ STATE.resources = r.data||[]; renderResources(STATE.resources); });
+    sb.from('resources').select('*').order('section').order('sort_order').then(function(r){
+      STATE.resources = r.data||[]; renderResources(STATE.resources);
+    });
+  }
+  function loadStaff(){
+    Promise.all([
+      sb.from('admins').select('*').order('role'),
+      sb.from('instructor_courses').select('*')
+    ]).then(function(res){
+      STATE.staff  = res[0].data || [];
+      STATE.assign = res[1].data || [];
+      renderStaff(); fillAssignSelect(); fillPersonSelect();
+    });
   }
 
   /* ---------- render ---------- */
   function renderStats(){
     var active = STATE.enrolments.filter(function(e){
       var s=(e.status||'').toLowerCase(); return s.indexOf('progress')>-1||s==='enrolled'||s==='active'; }).length;
-    var open = STATE.courses.filter(function(c){ return c.is_open; }).length;
-    $('stats').innerHTML =
-      stat(STATE.students.length,'Students') + stat(active,'Active enrolments') +
-      stat(open,'Courses open') + stat(STATE.enrolments.length,'Enrolments total');
+    var html = stat(STATE.students.length, isSuper()?'Students':'My students') +
+               stat(active,'Active enrolments');
+    if (isSuper()) {
+      html += stat(STATE.courses.filter(function(c){return c.is_open;}).length,'Courses open') +
+              stat(STATE.enrolments.length,'Enrolments total');
+    } else {
+      html += stat(ME.teaches.length,'Courses I teach') +
+              stat(STATE.enrolments.length,'Enrolments total');
+    }
+    $('stats').innerHTML = html;
   }
   function stat(n,l){ return '<div class="stat"><b>'+n+'</b><span>'+l+'</span></div>'; }
 
   function nameOf(id){
     var s = STATE.students.filter(function(x){return x.id===id;})[0];
-    return s ? (s.full_name || s.student_ref || id.slice(0,8)) : '(deleted student)';
+    return s ? (s.full_name || s.student_ref || id.slice(0,8)) : '(not visible to you)';
   }
 
   function renderRecent(){
@@ -449,35 +571,52 @@ var CONFIG = {
       if(!q) return true;
       return ((s.full_name||'')+(s.email||'')+(s.student_ref||'')).toLowerCase().indexOf(q)>-1;
     });
-    if(!rows.length){ $('students').innerHTML='<div class="empty">No students yet. They appear here once they create an account at easternuav.com/portal/</div>'; return; }
-    $('students').innerHTML = '<table><thead><tr><th>Name</th><th>Contact</th><th>Student ID</th><th>Status</th><th>Enrolments</th><th></th></tr></thead><tbody>' +
+    if(!rows.length){
+      $('students').innerHTML = '<div class="empty">' + (isSuper()
+        ? 'No students yet. They appear here once they create an account at easternuav.com/portal/'
+        : 'No students on your courses yet. The super admin assigns you courses and enrols students onto them.')
+        + '</div>';
+      return;
+    }
+    $('students').innerHTML = '<table><thead><tr><th>Name</th><th>Contact</th><th>Student ID</th><th>Status</th><th>Enrolments</th>'+
+      (isSuper()?'<th></th>':'')+'</tr></thead><tbody>' +
       rows.map(function(s){
         var n = STATE.enrolments.filter(function(e){return e.student_id===s.id;}).length;
         return '<tr><td><b>'+esc(s.full_name||'—')+'</b></td>'+
           '<td>'+esc(s.email||'—')+'<br><span style="color:var(--muted)">'+esc(s.phone||'')+'</span></td>'+
           '<td>'+esc(s.student_ref||'—')+'</td>'+
           '<td>'+esc(s.status||'Active')+'</td><td>'+n+'</td>'+
-          '<td class="actions"><button class="mini-btn" data-edit-student="'+s.id+'">Edit</button></td></tr>';
+          (isSuper()?'<td class="actions"><button class="mini-btn" data-edit-student="'+s.id+'">Edit</button></td>':'')+
+          '</tr>';
       }).join('') + '</tbody></table>';
   }
   $('stuSearch').addEventListener('input', renderStudents);
 
   function renderCourses(){
     if(!STATE.courses.length){ $('courses').innerHTML='<div class="empty">No courses yet. Add one below, or run the seed SQL from the setup guide to load all 22.</div>'; return; }
-    $('courses').innerHTML = '<table><thead><tr><th>Course</th><th>Category</th><th>Enrolments</th><th>Status</th><th></th></tr></thead><tbody>' +
+    $('courses').innerHTML = '<table><thead><tr><th>Course</th><th>Category</th><th>Enrolments</th><th>Status</th>'+
+      (isSuper()?'<th></th>':'<th>Mine</th>')+'</tr></thead><tbody>' +
       STATE.courses.map(function(c){
         var n = STATE.enrolments.filter(function(e){return e.course_slug===c.slug;}).length;
+        var last = isSuper()
+          ? '<td class="actions"><button class="mini-btn" data-toggle-course="'+esc(c.slug)+'">'+(c.is_open?'Close':'Open')+'</button></td>'
+          : '<td>'+(ME.teaches.indexOf(c.slug)>-1 ? '<span class="badge instr">Assigned</span>' : '<span style="color:var(--muted)">—</span>')+'</td>';
         return '<tr><td><b>'+esc(c.title)+'</b><br><span style="color:var(--muted);font-size:13px">'+esc(c.slug)+'</span></td>'+
           '<td>'+esc(c.category||'—')+'</td><td>'+n+'</td>'+
           '<td><span class="badge '+(c.is_open?'open':'shut')+'">'+(c.is_open?'Open':'Closed')+'</span></td>'+
-          '<td class="actions"><button class="mini-btn" data-toggle-course="'+esc(c.slug)+'">'+
-          (c.is_open?'Close':'Open')+'</button></td></tr>';
+          last+'</tr>';
       }).join('') + '</tbody></table>';
   }
 
   function renderEnrolments(){
-    if(!STATE.enrolments.length){ $('enrolments').innerHTML='<div class="empty">No enrolments yet.</div>'; return; }
-    $('enrolments').innerHTML = '<table><thead><tr><th>Student</th><th>Course</th><th>Dates</th><th>Status</th><th>Progress</th><th></th></tr></thead><tbody>' +
+    if(!STATE.enrolments.length){
+      $('enrolments').innerHTML = '<div class="empty">' + (isSuper()
+        ? 'No enrolments yet.'
+        : 'Nothing on your courses yet.') + '</div>';
+      return;
+    }
+    $('enrolments').innerHTML = '<table><thead><tr><th>Student</th><th>Course</th><th>Dates</th><th>Status</th><th>Progress</th>'+
+      (isSuper()?'<th></th>':'')+'</tr></thead><tbody>' +
       STATE.enrolments.map(function(e){
         return '<tr><td><b>'+esc(nameOf(e.student_id))+'</b><br><span style="color:var(--muted);font-size:13px">'+esc(e.cohort||'')+'</span></td>'+
           '<td>'+esc(e.course_name)+'</td>'+
@@ -487,16 +626,21 @@ var CONFIG = {
               return '<option'+(s===e.status?' selected':'')+'>'+s+'</option>'; }).join('')+'</select></td>'+
           '<td><input type="number" min="0" max="100" value="'+(e.progress_pct||0)+'" data-progress="'+e.id+'" '+
             'style="margin:0;padding:7px 9px;width:78px;font-size:13.5px"></td>'+
-          '<td class="actions"><button class="mini-btn danger" data-del-enrol="'+e.id+'">Remove</button></td></tr>';
+          (isSuper()?'<td class="actions"><button class="mini-btn danger" data-del-enrol="'+e.id+'">Remove</button></td>':'')+
+          '</tr>';
       }).join('') + '</tbody></table>';
   }
 
   function renderAnnouncements(rows){
     if(!rows.length){ $('announcements').innerHTML='<div class="empty">Nothing posted yet.</div>'; return; }
-    $('announcements').innerHTML = '<table><thead><tr><th>Date</th><th>Title</th><th>Message</th><th></th></tr></thead><tbody>'+
-      rows.map(function(a){ return '<tr><td style="white-space:nowrap">'+fmt(a.published_at)+'</td>'+
+    $('announcements').innerHTML = '<table><thead><tr><th>Date</th><th>Audience</th><th>Title</th><th>Message</th><th></th></tr></thead><tbody>'+
+      rows.map(function(a){
+        var mine = isSuper() || (a.course_slug && canTeach(a.course_slug));
+        return '<tr><td style="white-space:nowrap">'+fmt(a.published_at)+'</td>'+
+        '<td>'+(a.course_slug ? esc(courseTitle(a.course_slug)) : '<b>All students</b>')+'</td>'+
         '<td><b>'+esc(a.title)+'</b></td><td style="color:var(--muted)">'+esc(a.body||'')+'</td>'+
-        '<td class="actions"><button class="mini-btn danger" data-del-ann="'+a.id+'">Delete</button></td></tr>'; }).join('')+
+        '<td class="actions">'+(mine?'<button class="mini-btn danger" data-del-ann="'+a.id+'">Delete</button>':'')+'</td></tr>';
+      }).join('')+
       '</tbody></table>';
   }
 
@@ -507,17 +651,45 @@ var CONFIG = {
   }
   function renderResources(rows){
     if(!rows.length){ $('resources').innerHTML='<div class="empty">No documents shared yet.</div>'; return; }
-    $('resources').innerHTML = '<table><thead><tr><th>Title</th><th>Course</th><th>Section</th><th>Type</th><th>Link</th><th></th></tr></thead><tbody>'+
+    $('resources').innerHTML = '<table><thead><tr><th>Title</th><th>Course</th><th>Section</th><th>Type</th><th>Link</th>'+
+      (isSuper()?'<th></th>':'')+'</tr></thead><tbody>'+
       rows.map(function(x){ return '<tr><td><b>'+esc(x.title)+'</b><br><span style="color:var(--muted);font-size:13px">'+esc(x.description||'')+'</span></td>'+
         '<td>'+esc(courseTitle(x.course_slug))+'</td>'+
         '<td>'+esc(x.section||'—')+'</td>'+
         '<td>'+esc(x.kind||'Link')+'</td>'+
         '<td><a href="'+esc(x.url)+'" target="_blank" rel="noopener" style="color:var(--navy)">Open</a></td>'+
-        '<td class="actions"><button class="mini-btn danger" data-del-res="'+x.id+'">Delete</button></td></tr>'; }).join('')+
+        (isSuper()?'<td class="actions"><button class="mini-btn danger" data-del-res="'+x.id+'">Delete</button></td>':'')+
+        '</tr>'; }).join('')+
       '</tbody></table>';
   }
 
+  function renderStaff(){
+    if(!STATE.staff.length){ $('staff').innerHTML='<div class="empty">No staff yet.</div>'; return; }
+    $('staff').innerHTML = '<table><thead><tr><th>Name</th><th>Role</th><th>Courses assigned</th><th></th></tr></thead><tbody>'+
+      STATE.staff.map(function(s){
+        var mine = STATE.assign.filter(function(a){return a.staff_id===s.id;})
+                     .map(function(a){ return courseTitle(a.course_slug); });
+        var isSelf = s.id === ME.id;
+        var roleBadge = s.role==='super_admin'
+          ? '<span class="badge super">Super admin</span>' : '<span class="badge instr">Instructor</span>';
+        var courses = s.role==='super_admin'
+          ? '<span style="color:var(--muted)">Everything</span>'
+          : (mine.length ? esc(mine.join(', ')) : '<span style="color:var(--muted)">None yet — they will see nothing</span>');
+        var acts = isSelf
+          ? '<span style="color:var(--muted);font-size:13px">You</span>'
+          : '<button class="mini-btn" data-role-staff="'+s.id+'" data-to="'+(s.role==='super_admin'?'instructor':'super_admin')+'">Make '+
+              (s.role==='super_admin'?'instructor':'super admin')+'</button>'+
+            '<button class="mini-btn danger" data-del-staff="'+s.id+'">Remove</button>';
+        return '<tr><td><b>'+esc(s.full_name||'—')+'</b><br><span style="color:var(--muted);font-size:13px">'+
+          esc(s.title||s.email||'')+'</span></td>'+
+          '<td>'+roleBadge+'</td><td>'+courses+'</td>'+
+          '<td class="actions">'+acts+'</td></tr>';
+      }).join('')+'</tbody></table>';
+  }
+
+  /* ---------- selects ---------- */
   function fillStudentSelect(){
+    if(!$('enStudent')) return;
     $('enStudent').innerHTML = '<option value="">— choose a student —</option>' +
       STATE.students.map(function(s){ return '<option value="'+s.id+'">'+esc(s.full_name||s.email||s.id.slice(0,8))+'</option>'; }).join('');
   }
@@ -527,7 +699,36 @@ var CONFIG = {
       open.map(function(c){ return '<option value="'+esc(c.slug)+'">'+esc(c.title)+'</option>'; }).join('');
     $('rCourse').innerHTML = '<option value="">All students (general resource)</option>' +
       STATE.courses.map(function(c){ return '<option value="'+esc(c.slug)+'">'+esc(c.title)+'</option>'; }).join('');
+
+    /* announcement audience: super admin can pick everyone, an instructor only their own courses */
+    var mine = isSuper() ? STATE.courses : STATE.courses.filter(function(c){ return ME.teaches.indexOf(c.slug)>-1; });
+    $('anCourse').innerHTML = (isSuper() ? '<option value="">All students (site-wide)</option>' : '') +
+      mine.map(function(c){ return '<option value="'+esc(c.slug)+'">'+esc(c.title)+'</option>'; }).join('') +
+      (mine.length ? '' : '<option value="">— no courses assigned to you —</option>');
   }
+  function fillPersonSelect(){
+    if(!$('sfPerson')) return;
+    var staffIds = STATE.staff.map(function(s){ return s.id; });
+    var pool = STATE.students.filter(function(s){ return staffIds.indexOf(s.id) === -1; });
+    $('sfPerson').innerHTML = '<option value="">— choose someone who has signed up —</option>' +
+      pool.map(function(s){ return '<option value="'+s.id+'">'+esc((s.full_name||'(no name)')+' — '+(s.email||s.id.slice(0,8)))+'</option>'; }).join('');
+  }
+  function fillAssignSelect(){
+    var instr = STATE.staff.filter(function(s){ return s.role === 'instructor'; });
+    $('asWho').innerHTML = '<option value="">— choose an instructor —</option>' +
+      instr.map(function(s){ return '<option value="'+s.id+'">'+esc(s.full_name||s.email||s.id.slice(0,8))+'</option>'; }).join('');
+    renderAssignGrid();
+  }
+  function renderAssignGrid(){
+    var el = $('asCourses'); if(!el) return;
+    var who = $('asWho') ? $('asWho').value : '';
+    if(!who){ el.innerHTML = '<p style="color:var(--muted);font-size:14.5px;grid-column:1/-1">Choose an instructor to see their courses.</p>'; return; }
+    var have = STATE.assign.filter(function(a){return a.staff_id===who;}).map(function(a){return a.course_slug;});
+    el.innerHTML = STATE.courses.map(function(c){
+      return '<label><input type="checkbox" value="'+esc(c.slug)+'"'+(have.indexOf(c.slug)>-1?' checked':'')+'> '+esc(c.title)+'</label>';
+    }).join('');
+  }
+  document.addEventListener('change', function(ev){ if(ev.target.id==='asWho') renderAssignGrid(); });
 
   /* ---------- writes ---------- */
   document.addEventListener('click', function(ev){
@@ -572,6 +773,24 @@ var CONFIG = {
       sb.from('students').update({full_name:name, student_ref:ref, status:st}).eq('id', s.id).then(function(r){
         if(r.error) return flash(r.error.message,'err');
         flash('Student updated.'); loadStudents();
+      });
+    }
+
+    /* ---- staff ---- */
+    if (t.dataset.roleStaff){
+      var to = t.dataset.to;
+      var label = to==='super_admin' ? 'super admin' : 'instructor';
+      if(!confirm('Change this person to ' + label + '?')) return;
+      sb.from('admins').update({role: to}).eq('id', t.dataset.roleStaff).then(function(r){
+        if(r.error) return flash(r.error.message,'err');
+        flash('Role changed to ' + label + '.'); loadStaff();
+      });
+    }
+    if (t.dataset.delStaff){
+      if(!confirm('Remove this person from staff? Their login still works as a student.')) return;
+      sb.from('admins').delete().eq('id', t.dataset.delStaff).then(function(r){
+        if(r.error) return flash(r.error.message,'err');
+        flash('Removed from staff.'); loadStaff();
       });
     }
   });
@@ -623,11 +842,17 @@ var CONFIG = {
 
   $('annForm').addEventListener('submit', function(ev){
     ev.preventDefault();
-    sb.from('announcements').insert({ title:$('anTitle').value.trim(), body:$('anBody').value.trim() })
-      .then(function(r){
-        if(r.error) return flash(r.error.message,'err');
-        ev.target.reset(); flash('Announcement posted to all students.'); loadAnnouncements();
-      });
+    var slug = $('anCourse').value || null;
+    if (!isSuper() && !slug) return flash('Choose one of your courses. Only the super admin can post to everyone.','err');
+    sb.from('announcements').insert({
+      title:$('anTitle').value.trim(), body:$('anBody').value.trim(),
+      course_slug: slug, author_id: ME.id
+    }).then(function(r){
+      if(r.error) return flash(r.error.message,'err');
+      ev.target.reset();
+      flash(slug ? 'Posted to ' + courseTitle(slug) + '.' : 'Announcement posted to all students.');
+      loadAnnouncements();
+    });
   });
 
   $('resForm').addEventListener('submit', function(ev){
@@ -639,6 +864,42 @@ var CONFIG = {
         if(r.error) return flash(r.error.message,'err');
         ev.target.reset(); flash('Document shared with students.'); loadResources();
       });
+  });
+
+  $('staffForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var id = $('sfPerson').value;
+    if(!id) return flash('Choose someone from the list. They have to sign up at /portal/ first.','err');
+    var person = STATE.students.filter(function(s){return s.id===id;})[0] || {};
+    sb.from('admins').insert({
+      id: id, full_name: person.full_name || null, email: person.email || null,
+      title: $('sfTitle').value.trim() || null, role: $('sfRole').value
+    }).then(function(r){
+      if(r.error) return flash(r.error.message,'err');
+      ev.target.reset();
+      flash((person.full_name||'They') + ' can now sign in here as ' +
+        ($('sfRole').value==='super_admin'?'a super admin':'an instructor') +
+        ($('sfRole').value==='instructor' ? ' — assign their courses below.' : '.'));
+      loadStaff();
+    });
+  });
+
+  $('asSave').addEventListener('click', function(){
+    var who = $('asWho').value;
+    if(!who) return flash('Choose an instructor first.','err');
+    var want = [].slice.call($('asCourses').querySelectorAll('input:checked')).map(function(i){ return i.value; });
+    /* replace the whole set: clear, then insert what is ticked */
+    sb.from('instructor_courses').delete().eq('staff_id', who).then(function(d){
+      if(d.error) return flash(d.error.message,'err');
+      if(!want.length){ flash('All course assignments cleared for that instructor.'); return loadStaff(); }
+      sb.from('instructor_courses').insert(want.map(function(s){
+        return { staff_id: who, course_slug: s };
+      })).then(function(r){
+        if(r.error) return flash(r.error.message,'err');
+        flash('Saved — ' + want.length + ' course' + (want.length===1?'':'s') + ' assigned.');
+        loadStaff();
+      });
+    });
   });
 
   /* ---------- start ---------- */

@@ -96,6 +96,9 @@ main{padding:38px 0 76px}
 .ann{padding:16px 0;border-bottom:1px solid var(--line)}
 .ann:last-child{border-bottom:0}
 .ann time{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--red);font-weight:700}
+.ann-tag{display:inline-block;margin-left:9px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:700;color:#1d4e89;background:#eaf2fb;border:1px solid #c3d7ef;border-radius:999px;padding:3px 9px;
+  vertical-align:1px}
 .ann h4{font-size:17px;color:var(--navy);margin:5px 0 7px}
 .ann p{color:var(--muted);font-size:14.5px;margin:0}
 
@@ -153,16 +156,22 @@ main{padding:38px 0 76px}
           <label for="ph">Phone</label>
           <input id="ph" type="tel" autocomplete="tel" placeholder="+977 98xx xxx xxx">
         </div>
-        <label for="e">Email address</label>
-        <input id="e" type="email" autocomplete="email" required placeholder="you@example.com">
+        <div id="emailWrap">
+          <label for="e">Email address</label>
+          <input id="e" type="email" autocomplete="email" required placeholder="you@example.com">
+        </div>
         <div id="pwWrap">
           <label for="p">Password</label>
           <input id="p" type="password" autocomplete="current-password" placeholder="Your password">
         </div>
+        <div id="pw2Wrap" hidden>
+          <label for="p2">Confirm new password</label>
+          <input id="p2" type="password" autocomplete="new-password" placeholder="Type it again">
+        </div>
         <button class="btn btn-red" type="submit" id="loginBtn" style="width:100%">Sign in</button>
       </form>
 
-      <p class="altlink"><a id="toSignup">Create an account</a> &nbsp;·&nbsp; <a id="toReset">Forgotten your password?</a></p>
+      <p class="altlink" id="altLinks"><a id="toSignup">Create an account</a> &nbsp;·&nbsp; <a id="toReset">Forgotten your password?</a></p>
     </div>
 
     <p class="below">Not enrolled yet? <a href="/courses/">View our courses</a> &nbsp;·&nbsp; <a href="/">Back to site</a></p>
@@ -257,6 +266,11 @@ var CONFIG = {
 
   if (!configured) { $('setupNotice').hidden = false; return; }
 
+  /* Read this BEFORE creating the client — supabase-js consumes the URL fragment
+     and clears it as soon as it starts up. */
+  var IN_RECOVERY = /(^|[#&?])type=recovery(&|$)/.test(window.location.hash) ||
+                    /(^|[?&])type=recovery(&|$)/.test(window.location.search);
+
   var sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
   var mode = 'signin';
   $('yr').textContent = new Date().getFullYear();
@@ -294,21 +308,30 @@ var CONFIG = {
   /* ---------- auth ---------- */
   function setMode(m) {
     mode = m;
-    var signup = m === 'signup', reset = m === 'reset';
-    $('loginTitle').textContent = signup ? 'Create your account' : reset ? 'Reset password' : 'Sign in';
+    var signup = m === 'signup', reset = m === 'reset', newpw = m === 'newpw';
+    $('loginTitle').textContent = signup ? 'Create your account'
+      : reset ? 'Reset password' : newpw ? 'Set a new password' : 'Sign in';
     $('loginSub').textContent   = signup
       ? 'Once you have an account, we link your course enrolments to it.'
-      : reset ? "Enter your email and we'll send you a reset link."
+      : reset  ? "Enter your email and we'll send you a reset link."
+      : newpw  ? 'Choose a new password for your account. At least eight characters.'
       : 'Access your course details, documents and schedule.';
     $('signupFields').hidden  = !signup;
     $('fn').required          = signup;
+    $('emailWrap').hidden     = newpw;          /* they are already identified by the link */
+    $('e').required           = !newpw;
     $('pwWrap').hidden        = reset;
     $('p').required           = !reset;
-    $('p').setAttribute('autocomplete', signup ? 'new-password' : 'current-password');
-    $('loginBtn').textContent = signup ? 'Create account' : reset ? 'Send reset link' : 'Sign in';
+    $('pw2Wrap').hidden       = !newpw;
+    $('p2').required          = newpw;
+    document.querySelector('label[for="p"]').textContent = newpw ? 'New password' : 'Password';
+    $('p').setAttribute('autocomplete', (signup || newpw) ? 'new-password' : 'current-password');
+    $('loginBtn').textContent = signup ? 'Create account'
+      : reset ? 'Send reset link' : newpw ? 'Save new password' : 'Sign in';
     $('toSignup').textContent = signup ? 'Back to sign in' : 'Create an account';
     $('toReset').hidden       = signup;
     $('toReset').textContent  = reset ? 'Back to sign in' : 'Forgotten your password?';
+    $('altLinks').hidden      = newpw;
     say('');
   }
   $('toSignup').addEventListener('click', function () { setMode(mode === 'signup' ? 'signin' : 'signup'); });
@@ -342,8 +365,24 @@ var CONFIG = {
       return;
     }
 
+    if (mode === 'newpw') {
+      if (pw.length < 8)       { done(); say('Use at least eight characters.'); return; }
+      if (pw !== $('p2').value){ done(); say('Those two passwords do not match.'); return; }
+      sb.auth.updateUser({ password: pw }).then(function (r) {
+        done();
+        if (r.error) { say(r.error.message); return; }
+        /* the recovery link already signed them in, so go straight through */
+        IN_RECOVERY = false;
+        sb.auth.getUser().then(function (u) {
+          if (u.data && u.data.user) { boot(u.data.user); }
+          else { setMode('signin'); say('Password changed. Sign in with your new password.', 'ok'); }
+        });
+      });
+      return;
+    }
+
     if (mode === 'reset') {
-      sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href })
+      sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://easternuav.com/portal/' })
         .then(function (r) {
           done();
           if (r.error) { say(r.error.message); return; }
@@ -369,7 +408,7 @@ var CONFIG = {
   });
 
   /* ---------- data ---------- */
-  var MY_COURSES = [], DONE = {};
+  var MY_COURSES = [], DONE = {}, COURSE_NAMES = {};
 
   function boot(user) {
     show('app');
@@ -388,20 +427,29 @@ var CONFIG = {
     sb.from('enrolments').select('*').eq('student_id', user.id)
       .order('start_date', { ascending: false }).then(function (r) {
         var rows = r.data || [], el = $('courses');
-        if (r.error)      { el.innerHTML = '<div class="empty">Could not load your courses. Please contact the training office.</div>'; return; }
         MY_COURSES = rows.map(function (x) { return x.course_slug; }).filter(Boolean);
-        // resources depend on knowing the student's courses, so load them after enrolments
+        rows.forEach(function (x) { if (x.course_slug) COURSE_NAMES[x.course_slug] = x.course_name; });
+        // both depend on knowing the student's courses, so load them after enrolments
         loadResources(user);
+        loadAnnouncements();
+        if (r.error)      { el.innerHTML = '<div class="empty">Could not load your courses. Please contact the training office.</div>'; return; }
         if (!rows.length) { el.innerHTML = '<div class="empty">You have no course enrolments recorded yet. If you have just enrolled, it may take a day to appear here — contact us if it doesn\'t.</div>'; return; }
         el.innerHTML = rows.map(course).join('');
       });
+  }
 
+  /* Notices. The database only returns site-wide ones plus those for courses this
+     student is on, so nothing needs filtering here — we just label which is which. */
+  function loadAnnouncements() {
     sb.from('announcements').select('*').order('published_at', { ascending: false })
       .limit(6).then(function (r) {
         var rows = r.data || [], el = $('announcements');
         if (!rows.length) { el.innerHTML = '<div class="empty">Nothing new right now.</div>'; return; }
         el.innerHTML = rows.map(function (a) {
-          return '<div class="ann"><time>' + fmtDate(a.published_at) + '</time>' +
+          var tag = a.course_slug
+            ? '<span class="ann-tag">' + esc(COURSE_NAMES[a.course_slug] || a.course_slug) + '</span>'
+            : '';
+          return '<div class="ann"><time>' + fmtDate(a.published_at) + '</time>' + tag +
                  '<h4>' + esc(a.title) + '</h4><p>' + esc(a.body) + '</p></div>';
         }).join('');
       });
@@ -493,9 +541,27 @@ var CONFIG = {
     '</div>';
   }
 
+  /* ---------- start ----------
+     A password-reset link signs the user in and lands them here. Without this,
+     that session looks like an ordinary sign-in and they get the dashboard —
+     never the chance to actually set a new password. Two ways to catch it:
+     the type=recovery marker in the URL, and Supabase's own event. */
+  function enterRecovery() {
+    if (!IN_RECOVERY) return;
+    show('login');
+    setMode('newpw');
+    say('Choose a new password below. This link works once.', 'ok');
+  }
+
+  sb.auth.onAuthStateChange(function (event) {
+    if (event === 'PASSWORD_RECOVERY') { IN_RECOVERY = true; enterRecovery(); }
+  });
+
   sb.auth.getSession().then(function (r) {
     var session = r.data && r.data.session;
-    if (session && session.user) { boot(session.user); } else { show('login'); }
+    if (IN_RECOVERY)                  { enterRecovery(); }
+    else if (session && session.user) { boot(session.user); }
+    else                              { show('login'); }
   });
 })();
 </script>
