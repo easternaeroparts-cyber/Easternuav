@@ -405,7 +405,7 @@ var CONFIG = {
      ME.teaches is the list of course slugs an instructor is assigned to —
      the database enforces the same boundary, this is only so the screen matches. */
   var ME    = { id:null, email:'', role:'instructor', teaches:[] };
-  var STATE = { students:[], courses:[], enrolments:[], resources:[], staff:[], assign:[] };
+  var STATE = { students:[], courses:[], enrolments:[], resources:[], staff:[], assign:[], staffIds:[] };
   var STUDENTS_LOADED = false;
 
   function isSuper(){ return ME.role === 'super_admin'; }
@@ -492,8 +492,21 @@ var CONFIG = {
 
   /* ---------- load ---------- */
   function loadAll(){
+    loadStaffIds();   /* first — the student list is filtered against it */
     loadStudents(); loadCourses(); loadEnrolments(); loadAnnouncements(); loadResources();
     if (isSuper()) loadStaff();
+  }
+
+  /* Staff sign up through the student portal like anyone else, so they have a
+     profile row too. They are colleagues, not students — keep them off the roster. */
+  function loadStaffIds(){
+    sb.from('admins').select('id').then(function(r){
+      STATE.staffIds = (r.data||[]).map(function(x){ return x.id; });
+      if (STUDENTS_LOADED) { renderStudents(); fillStudentSelect(); renderStats(); }
+    });
+  }
+  function studentsOnly(){
+    return STATE.students.filter(function(s){ return STATE.staffIds.indexOf(s.id) === -1; });
   }
 
   function loadStudents(){
@@ -544,7 +557,7 @@ var CONFIG = {
   function renderStats(){
     var active = STATE.enrolments.filter(function(e){
       var s=(e.status||'').toLowerCase(); return s.indexOf('progress')>-1||s==='enrolled'||s==='active'; }).length;
-    var html = stat(STATE.students.length, isSuper()?'Students':'My students') +
+    var html = stat(studentsOnly().length, isSuper()?'Students':'My students') +
                stat(active,'Active enrolments');
     if (isSuper()) {
       html += stat(STATE.courses.filter(function(c){return c.is_open;}).length,'Courses open') +
@@ -575,7 +588,7 @@ var CONFIG = {
 
   function renderStudents(){
     var q = ($('stuSearch').value||'').toLowerCase();
-    var rows = STATE.students.filter(function(s){
+    var rows = studentsOnly().filter(function(s){
       if(!q) return true;
       return ((s.full_name||'')+(s.email||'')+(s.student_ref||'')).toLowerCase().indexOf(q)>-1;
     });
@@ -699,7 +712,7 @@ var CONFIG = {
   function fillStudentSelect(){
     if(!$('enStudent')) return;
     $('enStudent').innerHTML = '<option value="">— choose a student —</option>' +
-      STATE.students.map(function(s){ return '<option value="'+s.id+'">'+esc(s.full_name||s.email||s.id.slice(0,8))+'</option>'; }).join('');
+      studentsOnly().map(function(s){ return '<option value="'+s.id+'">'+esc(s.full_name||s.email||s.id.slice(0,8))+'</option>'; }).join('');
   }
   function fillCourseSelect(){
     var open = STATE.courses.filter(function(c){ return c.is_open; });
