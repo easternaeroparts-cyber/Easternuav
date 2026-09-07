@@ -406,6 +406,7 @@ var CONFIG = {
      the database enforces the same boundary, this is only so the screen matches. */
   var ME    = { id:null, email:'', role:'instructor', teaches:[] };
   var STATE = { students:[], courses:[], enrolments:[], resources:[], staff:[], assign:[] };
+  var STUDENTS_LOADED = false;
 
   function isSuper(){ return ME.role === 'super_admin'; }
   function canTeach(slug){ return isSuper() || ME.teaches.indexOf(slug) > -1; }
@@ -497,8 +498,12 @@ var CONFIG = {
 
   function loadStudents(){
     sb.from('students').select('*').order('full_name').then(function(r){
-      STATE.students = r.data || [];
+      STATE.students = r.data || []; STUDENTS_LOADED = true;
       renderStudents(); fillStudentSelect(); fillPersonSelect(); renderStats();
+      /* Names live in STATE.students, and these two tables print them. They are
+         loaded in parallel, so whichever finishes second has to redraw the other
+         — otherwise every row reads "(not visible to you)". */
+      renderRecent(); renderEnrolments();
     });
   }
   function loadCourses(){
@@ -554,7 +559,10 @@ var CONFIG = {
 
   function nameOf(id){
     var s = STATE.students.filter(function(x){return x.id===id;})[0];
-    return s ? (s.full_name || s.student_ref || id.slice(0,8)) : '(not visible to you)';
+    if (s) return s.full_name || s.student_ref || id.slice(0,8);
+    if (!STUDENTS_LOADED) return '…';                 /* still arriving */
+    return isSuper() ? '(profile missing)'            /* enrolled, but no student row */
+                     : '(not on your courses)';       /* RLS is hiding them, correctly */
   }
 
   function renderRecent(){
