@@ -473,7 +473,7 @@ var CONFIG = {
     $('instrNote').hidden = isSuper();
     if (!isSuper()) {
       $('stuHint').textContent   = 'Students enrolled on the courses assigned to you.';
-      $('crsHint').textContent   = 'The full catalogue. The courses assigned to you are marked — only the super admin opens and closes them.';
+      $('crsHint').textContent   = 'The courses assigned to you. The super admin decides which courses you teach, and opens or closes them.';
       $('enrolHead').textContent = 'Enrolments on my courses';
       $('annHint').textContent   = 'Goes to the students on the course you choose. Only the super admin can post to everyone.';
     }
@@ -613,15 +613,29 @@ var CONFIG = {
   }
   $('stuSearch').addEventListener('input', renderStudents);
 
+  /* An instructor has no business with the other twenty-one courses — they can't
+     open, close or teach them, so listing them is just noise. */
+  function myCourses(){
+    return isSuper() ? STATE.courses
+                     : STATE.courses.filter(function(c){ return ME.teaches.indexOf(c.slug) > -1; });
+  }
+
   function renderCourses(){
-    if(!STATE.courses.length){ $('courses').innerHTML='<div class="empty">No courses yet. Add one below, or run the seed SQL from the setup guide to load all 22.</div>'; return; }
+    var list = myCourses();
+    if(!list.length){
+      $('courses').innerHTML = '<div class="empty">' + (isSuper()
+        ? 'No courses yet. Add one below, or run the seed SQL from the setup guide to load all 22.'
+        : 'No courses are assigned to you yet. The super admin assigns them under Staff → Course assignments.')
+        + '</div>';
+      return;
+    }
     $('courses').innerHTML = '<table><thead><tr><th>Course</th><th>Category</th><th>Enrolments</th><th>Status</th>'+
-      (isSuper()?'<th></th>':'<th>Mine</th>')+'</tr></thead><tbody>' +
-      STATE.courses.map(function(c){
+      (isSuper()?'<th></th>':'')+'</tr></thead><tbody>' +
+      list.map(function(c){
         var n = STATE.enrolments.filter(function(e){return e.course_slug===c.slug;}).length;
         var last = isSuper()
           ? '<td class="actions"><button class="mini-btn" data-toggle-course="'+esc(c.slug)+'">'+(c.is_open?'Close':'Open')+'</button></td>'
-          : '<td>'+(ME.teaches.indexOf(c.slug)>-1 ? '<span class="badge instr">Assigned</span>' : '<span style="color:var(--muted)">—</span>')+'</td>';
+          : '';
         return '<tr><td><b>'+esc(c.title)+'</b><br><span style="color:var(--muted);font-size:13px">'+esc(c.slug)+'</span></td>'+
           '<td>'+esc(c.category||'—')+'</td><td>'+n+'</td>'+
           '<td><span class="badge '+(c.is_open?'open':'shut')+'">'+(c.is_open?'Open':'Closed')+'</span></td>'+
