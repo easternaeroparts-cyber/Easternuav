@@ -430,14 +430,32 @@ var CONFIG = {
     show('app');
     $('whoEmail').textContent = user.email;
 
-    sb.from('students').select('*').eq('id', user.id).maybeSingle().then(function (r) {
-      var s = r.data || {};
+    function paintDetails(s) {
+      s = s || {};
       var name = s.full_name || user.email.split('@')[0];
       $('whoName').textContent  = name;
       $('greeting').textContent = 'Welcome back, ' + name.split(' ')[0];
       $('details').innerHTML =
         row('Name', s.full_name) + row('Email', user.email) + row('Phone', s.phone) +
         row('Student ID', s.student_ref) + row('Location', s.country) + row('Status', s.status);
+    }
+
+    sb.from('students').select('*').eq('id', user.id).maybeSingle().then(function (r) {
+      if (r.data) { paintDetails(r.data); return; }
+
+      /* No profile row. This happens whenever the account was created while email
+         confirmation was pending — at sign-up there is no session yet, so the
+         insert is refused and the person never lands in the admin roster.
+         Create it on first successful sign-in instead. */
+      var meta = user.user_metadata || {};
+      var fresh = {
+        id: user.id, email: user.email,
+        full_name: meta.full_name || null, phone: meta.phone || null,
+        status: 'Active'
+      };
+      sb.from('students').insert(fresh).then(function (ins) {
+        paintDetails(ins.error ? { email: user.email } : fresh);
+      });
     });
 
     sb.from('enrolments').select('*').eq('student_id', user.id)
