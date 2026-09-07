@@ -356,7 +356,12 @@ var CONFIG = {
     if (mode === 'signup') {
       sb.auth.signUp({
         email: email, password: pw,
-        options: { data: { full_name: $('fn').value.trim(), phone: $('ph').value.trim() } }
+        options: {
+          /* without this, Supabase falls back to the project Site URL and drops
+             new students on the marketing homepage instead of their dashboard */
+          emailRedirectTo: 'https://easternuav.com/portal/',
+          data: { full_name: $('fn').value.trim(), phone: $('ph').value.trim() }
+        }
       }).then(function (r) {
         done();
         if (r.error) { say(r.error.message); return; }
