@@ -5,146 +5,128 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Student Portal — Eastern UAV</title>
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#0a0f16">
+<meta name="theme-color" content="#1D3461">
 <link rel="icon" href="/images/icon-512.png" type="image/png">
 <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/site.css">
 <style>
-:root{
-  --ink:#0a0f16; --ink-2:#101823; --ink-3:#16202d;
-  --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.18);
-  --text:#e8edf4; --muted:#93a2b5; --muted-2:#6f8095;
-  --accent:#ff7a1a; --accent-2:#37c8f2; --ok:#3ddc97; --warn:#ffc860; --r:14px;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--ink);color:var(--text);
-  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
-h1,h2,h3,h4{font-family:"Barlow Condensed",Inter,sans-serif;font-weight:700;letter-spacing:.01em;line-height:1.1;margin:0}
-p{margin:0 0 1em}
-a{color:var(--accent-2)}
-.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+/* ---------- portal-specific, layered on the site stylesheet ---------- */
+body{background:var(--grey)}
 [hidden]{display:none!important}
 
-/* header */
-.topbar{border-bottom:1px solid var(--line);background:rgba(10,15,22,.9);position:sticky;top:0;z-index:20;backdrop-filter:blur(12px)}
-.topbar .wrap{display:flex;align-items:center;gap:18px;height:70px}
-.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
-.brand img{height:38px;width:auto;flex:none}
-.brand b{font-family:"Barlow Condensed",sans-serif;font-size:23px;letter-spacing:.06em;text-transform:uppercase;line-height:1;display:block}
-.brand i{display:block;font-style:normal;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted-2);margin-top:3px}
+/* top bar */
+.ptop{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.ptop .wrap{display:flex;align-items:center;gap:18px;height:78px}
+.ptop .brand img{height:44px}
+.ptop .brand i{color:var(--red)}
 .spacer{margin-left:auto}
-.who{font-size:13px;color:var(--muted);text-align:right;line-height:1.35}
-.who b{display:block;color:var(--text);font-size:14px}
-
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;border-radius:8px;
-  text-decoration:none;border:1px solid transparent;font-size:12.5px;font-weight:700;letter-spacing:.09em;
-  text-transform:uppercase;cursor:pointer;font-family:inherit;transition:background .18s,border-color .18s,transform .15s}
-.btn:hover{transform:translateY(-1px)}
-.btn-primary{background:var(--accent);color:#1a0d02}
-.btn-primary:hover{background:#ff8c3a}
-.btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none}
-.btn-ghost{border-color:var(--line-2);color:var(--text);background:none}
-.btn-ghost:hover{border-color:#fff;background:rgba(255,255,255,.05)}
-.btn-sm{padding:9px 15px;font-size:11.5px}
+.who{text-align:right;line-height:1.35}
+.who b{display:block;font-size:15px;color:var(--navy)}
+.who span{font-size:13px;color:var(--muted)}
 
 /* login */
 .login-shell{min-height:100vh;display:grid;place-items:center;padding:40px 20px;
-  background:radial-gradient(800px 500px at 50% 0%,rgba(255,122,26,.13),transparent 62%),var(--ink)}
-.login{width:100%;max-width:420px}
-.login .logo{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:28px;text-decoration:none;color:inherit}
-.login .logo img{height:52px;width:auto}
-.login .box{border:1px solid var(--line);border-radius:var(--r);background:var(--ink-2);padding:32px 28px}
-.login h1{font-size:30px;text-transform:uppercase;margin-bottom:6px;text-align:center}
-.login .sub{color:var(--muted);font-size:14.5px;text-align:center;margin-bottom:26px}
-label{display:block;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 7px;font-weight:600}
-input{width:100%;background:var(--ink);border:1px solid var(--line-2);border-radius:9px;color:var(--text);
-  padding:13px 14px;font:inherit;font-size:15px;margin-bottom:16px}
-input:focus{outline:none;border-color:var(--accent)}
-.msg{border-radius:9px;padding:12px 14px;font-size:14px;margin-bottom:16px}
-.msg.err{background:rgba(255,90,90,.12);border:1px solid rgba(255,90,90,.35);color:#ffb3b3}
-.msg.ok{background:rgba(61,220,151,.10);border:1px solid rgba(61,220,151,.32);color:#9ff0cd}
-.login .foot{text-align:center;margin-top:20px;font-size:13.5px;color:var(--muted-2)}
-.login .foot a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line-2);cursor:pointer}
-.login .foot a:hover{color:var(--text)}
+  background:linear-gradient(160deg,var(--navy-deep) 0%,var(--navy-2) 100%)}
+.login{width:100%;max-width:430px}
+.login .logo{display:flex;align-items:center;gap:13px;justify-content:center;margin-bottom:26px;text-decoration:none}
+.login .logo img{height:56px;width:auto}
+.login .logo b{display:block;font-size:25px;font-weight:700;color:#fff;line-height:1}
+.login .logo i{display:block;font-style:normal;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(255,255,255,.6);margin-top:4px;font-weight:600}
+.login .box{background:#fff;border-radius:18px;padding:34px 30px;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.login h1{font-size:27px;color:var(--navy);margin-bottom:6px;text-align:center}
+.login .sub{color:var(--muted);font-size:15px;text-align:center;margin-bottom:26px}
+.login .altlink{text-align:center;margin-top:20px;font-size:14px;color:var(--muted)}
+.login .altlink a{color:var(--navy);font-weight:600;text-decoration:none;cursor:pointer}
+.login .altlink a:hover{color:var(--red)}
+.login .below{text-align:center;margin-top:22px;font-size:14px;color:rgba(255,255,255,.65)}
+.login .below a{color:#fff;text-decoration:none;font-weight:600}
+
+.msg{border-radius:10px;padding:13px 15px;font-size:14.5px;margin-bottom:16px;line-height:1.5}
+.msg.err{background:#fdeaea;border:1px solid #f3c2c2;color:#8e2226}
+.msg.ok{background:#e9f7f0;border:1px solid #bde3d0;color:#1a6b47}
 
 /* dashboard */
-main{padding:40px 0 72px}
-.hello{margin-bottom:32px}
-.hello h1{font-size:clamp(30px,4.5vw,44px);text-transform:uppercase}
-.hello p{color:var(--muted);margin:10px 0 0}
-.cols{display:grid;grid-template-columns:1.6fr 1fr;gap:24px;align-items:start}
-.panel{border:1px solid var(--line);border-radius:var(--r);background:var(--ink-2);padding:24px;margin-bottom:24px}
-.panel h2{font-size:21px;text-transform:uppercase;margin-bottom:4px}
-.panel .hint{color:var(--muted-2);font-size:13.5px;margin-bottom:18px}
-.empty{color:var(--muted-2);font-size:14.5px;border:1px dashed var(--line-2);border-radius:10px;padding:20px;text-align:center}
+main{padding:38px 0 76px}
+.hello{margin-bottom:30px}
+.hello h1{font-size:clamp(28px,4vw,40px);color:var(--navy)}
+.hello p{color:var(--muted);margin:10px 0 0;font-size:17px}
+.cols{display:grid;grid-template-columns:1.55fr 1fr;gap:26px;align-items:start}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;margin-bottom:26px;box-shadow:var(--shadow)}
+.panel h2{font-size:20px;color:var(--navy);margin-bottom:4px}
+.panel .hint{color:var(--muted);font-size:14px;margin-bottom:20px}
+.empty{color:var(--muted);font-size:15px;border:1px dashed #d3d9e2;border-radius:12px;padding:24px;text-align:center;background:#fafbfc}
 
-.course{border:1px solid var(--line);border-radius:11px;background:var(--ink);padding:20px;margin-bottom:14px}
+.course{border:1px solid var(--line);border-radius:14px;background:#fff;padding:22px;margin-bottom:16px}
 .course:last-child{margin-bottom:0}
-.course-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap}
-.course h3{font-size:21px;text-transform:uppercase}
-.badge{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;border-radius:999px;
-  padding:5px 11px;white-space:nowrap;border:1px solid}
-.badge.active{color:var(--ok);border-color:rgba(61,220,151,.4);background:rgba(61,220,151,.08)}
-.badge.upcoming{color:var(--warn);border-color:rgba(255,200,96,.4);background:rgba(255,200,96,.08)}
-.badge.done{color:var(--accent-2);border-color:rgba(55,200,242,.4);background:rgba(55,200,242,.08)}
-.badge.other{color:var(--muted);border-color:var(--line-2)}
-.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:16px}
-.kv div span{display:block;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted-2);margin-bottom:3px}
-.kv div b{font-weight:600;font-size:14.5px}
-.bar{height:7px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#ffab63);border-radius:99px}
-.bar-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:7px}
-.course .note{color:var(--muted);font-size:14px;margin:14px 0 0;padding-top:14px;border-top:1px solid var(--line)}
+.course-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap}
+.course h3{font-size:20px;color:var(--navy)}
+.badge{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;border-radius:999px;
+  padding:6px 13px;white-space:nowrap;border:1px solid}
+.badge.active{color:#1a6b47;border-color:#bde3d0;background:#e9f7f0}
+.badge.upcoming{color:#8a5d00;border-color:#f0dcae;background:#fdf5e3}
+.badge.done{color:#1d4e89;border-color:#c3d7ef;background:#eaf2fb}
+.badge.other{color:var(--muted);border-color:var(--line);background:var(--grey)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:16px;margin-bottom:18px}
+.kv div span{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.kv div b{font-weight:600;font-size:15px;color:var(--ink)}
+.bar{height:8px;border-radius:99px;background:#e8ecf1;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--red),#e35a5f);border-radius:99px}
+.bar-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:8px;font-weight:600}
+.course .note{color:var(--muted);font-size:14.5px;margin:16px 0 0;padding-top:16px;border-top:1px solid var(--line)}
 
-.link-row{display:flex;gap:13px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}
+.link-row{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}
 .link-row:last-child{border-bottom:0}
-.link-row:hover b{color:var(--accent)}
-.link-row .ic{flex:none;width:32px;height:32px;border-radius:8px;background:rgba(55,200,242,.11);color:var(--accent-2);
+.link-row:hover b{color:var(--red)}
+.link-row .ic{flex:none;width:36px;height:36px;border-radius:9px;background:rgba(29,52,97,.08);color:var(--navy);
   display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
-.link-row b{display:block;font-size:14.5px;font-weight:600;transition:color .18s}
-.link-row span{display:block;font-size:13px;color:var(--muted-2)}
+.link-row b{display:block;font-size:15px;font-weight:600;color:var(--navy);transition:color .18s}
+.link-row span{display:block;font-size:13.5px;color:var(--muted)}
+.res-group{margin-bottom:22px}
+.res-group:last-child{margin-bottom:0}
+.res-head{font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--red);font-weight:700;
+  padding-bottom:9px;margin-bottom:4px;border-bottom:2px solid var(--line)}
+.res-course{font-size:15px;font-weight:700;color:var(--navy);margin:0 0 10px}
+.tick{flex:none;width:22px;height:22px;border:2px solid var(--line);border-radius:6px;background:#fff;
+  cursor:pointer;margin-top:8px;padding:0;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:#fff;line-height:1;transition:all .15s}
+.tick:hover{border-color:var(--navy)}
+.tick.done{background:#1a6b47;border-color:#1a6b47}
 
-.ann{padding:15px 0;border-bottom:1px solid var(--line)}
+.ann{padding:16px 0;border-bottom:1px solid var(--line)}
 .ann:last-child{border-bottom:0}
-.ann time{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
-.ann h4{font-size:17px;text-transform:uppercase;margin:4px 0 6px}
-.ann p{color:var(--muted);font-size:14px;margin:0}
+.ann time{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--red);font-weight:700}
+.ann h4{font-size:17px;color:var(--navy);margin:5px 0 7px}
+.ann p{color:var(--muted);font-size:14.5px;margin:0}
 
-.detail{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.detail{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
 .detail:last-child{border-bottom:0}
-.detail span{color:var(--muted-2)}
-.detail b{font-weight:600;text-align:right}
+.detail span{color:var(--muted)}
+.detail b{font-weight:600;text-align:right;color:var(--ink)}
 
-footer{border-top:1px solid var(--line);padding:26px 0;color:var(--muted-2);font-size:13px}
-footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
-footer a{color:var(--muted-2);text-decoration:none}
-footer a:hover{color:var(--text)}
+.pfoot{border-top:1px solid var(--line);background:#fff;padding:24px 0;color:var(--muted);font-size:14px}
+.pfoot .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pfoot a{color:var(--muted);text-decoration:none}
+.pfoot a:hover{color:var(--red)}
 
-.setup{max-width:720px;margin:60px auto;padding:28px;border:1px solid rgba(255,200,96,.35);
-  background:rgba(255,200,96,.07);border-radius:var(--r)}
-.setup h2{font-size:24px;text-transform:uppercase;color:var(--warn);margin-bottom:12px}
-.setup p{color:var(--muted);font-size:15px}
-.setup code{background:var(--ink);padding:2px 7px;border-radius:5px;font-size:13.5px;color:var(--text)}
+.setup{max-width:740px;margin:70px auto;padding:32px;border:1px solid #f0dcae;background:#fdf5e3;border-radius:16px}
+.setup h2{font-size:24px;color:#8a5d00;margin-bottom:12px}
+.setup p{color:#6b5410;font-size:15.5px}
+.setup code{background:#fff;padding:2px 7px;border-radius:5px;font-size:14px;border:1px solid #f0dcae}
 
-@media(max-width:860px){ .cols{grid-template-columns:1fr} }
-@media(max-width:640px){
+@media(max-width:880px){ .cols{grid-template-columns:1fr} }
+@media(max-width:620px){
   .who{display:none}
-  .topbar .wrap{gap:12px;height:64px}
-  .kv{grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:12px}
-  .wrap{padding:0 18px}
+  .ptop .wrap{gap:12px;height:68px}
+  .kv{grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px}
 }
-@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 
-<!-- ============ SETUP NOTICE (shown until config is filled in) ============ -->
 <div id="setupNotice" class="setup" hidden>
   <h2>Portal not connected yet</h2>
-  <p>This portal needs its database connection before students can log in. Open <code>portal/index.html</code>,
+  <p>This portal needs its database connection before students can sign in. Open <code>portal/index.html</code>,
   find the <code>CONFIG</code> block near the bottom of the file, and paste in your Supabase project URL and
   <b>public anon key</b>.</p>
   <p style="margin-bottom:0">Setup instructions are in <code>PORTAL-SETUP.md</code>.</p>
@@ -155,8 +137,7 @@ footer a:hover{color:var(--text)}
   <div class="login">
     <a class="logo" href="/">
       <img src="/images/logo-light.png" alt="Eastern UAV">
-      <span><b style="font-family:'Barlow Condensed',sans-serif;font-size:24px;letter-spacing:.06em;text-transform:uppercase;display:block;line-height:1">Eastern UAV</b>
-      <i style="font-style:normal;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#6f8095">Student Portal</i></span>
+      <span><b>Eastern UAV</b><i>Student Portal</i></span>
     </a>
 
     <div class="box">
@@ -166,37 +147,39 @@ footer a:hover{color:var(--text)}
       <div id="loginMsg" class="msg" hidden></div>
 
       <form id="loginForm">
+        <div id="signupFields" hidden>
+          <label for="fn">Full name</label>
+          <input id="fn" type="text" autocomplete="name" placeholder="As it should appear on your certificate">
+          <label for="ph">Phone</label>
+          <input id="ph" type="tel" autocomplete="tel" placeholder="+977 98xx xxx xxx">
+        </div>
         <label for="e">Email address</label>
         <input id="e" type="email" autocomplete="email" required placeholder="you@example.com">
         <div id="pwWrap">
           <label for="p">Password</label>
           <input id="p" type="password" autocomplete="current-password" placeholder="Your password">
         </div>
-        <button class="btn btn-primary" type="submit" id="loginBtn" style="width:100%">Sign in</button>
+        <button class="btn btn-red" type="submit" id="loginBtn" style="width:100%">Sign in</button>
       </form>
 
-      <p class="foot" id="modeSwitch">
-        <a id="toReset">Forgotten your password?</a>
-      </p>
+      <p class="altlink"><a id="toSignup">Create an account</a> &nbsp;·&nbsp; <a id="toReset">Forgotten your password?</a></p>
     </div>
 
-    <p class="foot" style="margin-top:22px">
-      Not enrolled yet? <a href="/courses/">View our courses</a> &nbsp;·&nbsp; <a href="/">Back to site</a>
-    </p>
+    <p class="below">Not enrolled yet? <a href="/courses/">View our courses</a> &nbsp;·&nbsp; <a href="/">Back to site</a></p>
   </div>
 </div>
 
 <!-- ============ DASHBOARD ============ -->
 <div id="appView" hidden>
-  <div class="topbar">
+  <div class="ptop">
     <div class="wrap">
       <a class="brand" href="/">
-        <img src="/images/logo-light.png" alt="Eastern UAV">
-        <span><b>Eastern UAV</b><i>Student Portal</i></span>
+        <img src="/images/logo.png" alt="Eastern UAV" width="52" height="44">
+        <span><b>Eastern <em>UAV</em></b><i>Student Portal</i></span>
       </a>
       <div class="spacer"></div>
       <div class="who"><b id="whoName">—</b><span id="whoEmail">—</span></div>
-      <button class="btn btn-ghost btn-sm" id="signOut">Sign out</button>
+      <button class="btn btn-outline btn-sm" id="signOut">Sign out</button>
     </div>
   </div>
 
@@ -235,26 +218,26 @@ footer a:hover{color:var(--text)}
             <div id="resources"><div class="empty">Loading…</div></div>
           </section>
 
-          <section class="panel">
+          <section class="panel" style="margin-bottom:0">
             <h2>Need help?</h2>
             <p class="hint">Training team, Kathmandu.</p>
             <a class="link-row" href="tel:+9779810230070"><span class="ic">☎</span><span><b>+977 9810 230070</b><span>Call the training office</span></span></a>
-            <a class="link-row" href="mailto:info@easternuav.com"><span class="ic">✉</span><span><b>info@easternuav.com</b><span>Email us — we reply within one business day</span></span></a>
+            <a class="link-row" href="mailto:info@easternuav.com"><span class="ic">✉</span><span><b>info@easternuav.com</b><span>We reply within one business day</span></span></a>
           </section>
         </div>
       </div>
     </div>
   </main>
 
-  <footer>
+  <footer class="pfoot">
     <div class="wrap">
       <span>&copy; <span id="yr">2026</span> Eastern UAV — An Eastern Aero Company</span>
-      <span><a href="/">Main site</a> &nbsp;·&nbsp; <a href="/#contact">Contact</a></span>
+      <span><a href="/">Main site</a> &nbsp;·&nbsp; <a href="/courses/">Courses</a> &nbsp;·&nbsp; <a href="/#contact">Contact</a></span>
     </div>
   </footer>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js"></script>
 <script>
 /* =======================================================================
    CONFIG — paste your Supabase project details here.
@@ -262,15 +245,15 @@ footer a:hover{color:var(--text)}
    service_role key in this file; it must stay private.
    ======================================================================= */
 var CONFIG = {
-  SUPABASE_URL:      'YOUR_SUPABASE_URL',
-  SUPABASE_ANON_KEY: 'YOUR_SUPABASE_ANON_KEY'
+  SUPABASE_URL:      'https://yccxbftaopwbuyukjvzp.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljY3hiZnRhb3B3YnV5dWtqdnpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NDI3MjAsImV4cCI6MjEwNDMxODcyMH0.0UiSOt7aN7KdE0wpR963zVV-vHAs4wfE_iWS7sgd6sM'
 };
 /* ===================================================================== */
 
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var configured = CONFIG.SUPABASE_URL.indexOf('supabase.co') > -1 &&
-                   CONFIG.SUPABASE_ANON_KEY.length > 40;
+                   CONFIG.SUPABASE_ANON_KEY.length > 30;
 
   if (!configured) { $('setupNotice').hidden = false; return; }
 
@@ -285,25 +268,21 @@ var CONFIG = {
     m.className = 'msg ' + (kind || 'err');
     m.hidden = false;
   }
-
   function show(view) {
     $('loginView').hidden = view !== 'login';
     $('appView').hidden   = view !== 'app';
   }
-
   function fmtDate(d) {
     if (!d) return '—';
     var dt = new Date(d);
     if (isNaN(dt)) return d;
-    return dt.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+    return dt.toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' });
   }
-
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
     });
   }
-
   function badgeClass(status) {
     var s = (status || '').toLowerCase();
     if (s.indexOf('progress') > -1 || s === 'active' || s === 'enrolled') return 'active';
@@ -313,27 +292,55 @@ var CONFIG = {
   }
 
   /* ---------- auth ---------- */
-  $('toReset').addEventListener('click', function () {
-    mode = mode === 'signin' ? 'reset' : 'signin';
-    var reset = mode === 'reset';
-    $('loginTitle').textContent = reset ? 'Reset password' : 'Sign in';
-    $('loginSub').textContent   = reset
-      ? "Enter your email and we'll send you a reset link."
+  function setMode(m) {
+    mode = m;
+    var signup = m === 'signup', reset = m === 'reset';
+    $('loginTitle').textContent = signup ? 'Create your account' : reset ? 'Reset password' : 'Sign in';
+    $('loginSub').textContent   = signup
+      ? 'Once you have an account, we link your course enrolments to it.'
+      : reset ? "Enter your email and we'll send you a reset link."
       : 'Access your course details, documents and schedule.';
-    $('pwWrap').hidden      = reset;
-    $('p').required         = !reset;
-    $('loginBtn').textContent = reset ? 'Send reset link' : 'Sign in';
+    $('signupFields').hidden  = !signup;
+    $('fn').required          = signup;
+    $('pwWrap').hidden        = reset;
+    $('p').required           = !reset;
+    $('p').setAttribute('autocomplete', signup ? 'new-password' : 'current-password');
+    $('loginBtn').textContent = signup ? 'Create account' : reset ? 'Send reset link' : 'Sign in';
+    $('toSignup').textContent = signup ? 'Back to sign in' : 'Create an account';
+    $('toReset').hidden       = signup;
     $('toReset').textContent  = reset ? 'Back to sign in' : 'Forgotten your password?';
     say('');
-  });
+  }
+  $('toSignup').addEventListener('click', function () { setMode(mode === 'signup' ? 'signin' : 'signup'); });
+  $('toReset').addEventListener('click',  function () { setMode(mode === 'reset'  ? 'signin' : 'reset'); });
 
   $('loginForm').addEventListener('submit', function (ev) {
     ev.preventDefault();
     var email = $('e').value.trim(), pw = $('p').value;
     var btn = $('loginBtn'), label = btn.textContent;
     btn.disabled = true; btn.textContent = 'Please wait…'; say('');
-
     var done = function () { btn.disabled = false; btn.textContent = label; };
+
+    if (mode === 'signup') {
+      sb.auth.signUp({
+        email: email, password: pw,
+        options: { data: { full_name: $('fn').value.trim(), phone: $('ph').value.trim() } }
+      }).then(function (r) {
+        done();
+        if (r.error) { say(r.error.message); return; }
+        var u = r.data && r.data.user;
+        if (u) {
+          sb.from('students').insert({
+            id: u.id, full_name: $('fn').value.trim(), phone: $('ph').value.trim(),
+            email: email, status: 'Active'
+          }).then(function () {
+            if (r.data.session) { boot(u); }
+            else { say('Account created. Check your email to confirm the address, then sign in.', 'ok'); setMode('signin'); }
+          });
+        }
+      });
+      return;
+    }
 
     if (mode === 'reset') {
       sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href })
@@ -362,6 +369,8 @@ var CONFIG = {
   });
 
   /* ---------- data ---------- */
+  var MY_COURSES = [], DONE = {};
+
   function boot(user) {
     show('app');
     $('whoEmail').textContent = user.email;
@@ -371,40 +380,25 @@ var CONFIG = {
       var name = s.full_name || user.email.split('@')[0];
       $('whoName').textContent  = name;
       $('greeting').textContent = 'Welcome back, ' + name.split(' ')[0];
-
       $('details').innerHTML =
-        row('Name', s.full_name) +
-        row('Email', user.email) +
-        row('Phone', s.phone) +
-        row('Student ID', s.student_ref) +
-        row('Location', s.country) +
-        row('Status', s.status);
+        row('Name', s.full_name) + row('Email', user.email) + row('Phone', s.phone) +
+        row('Student ID', s.student_ref) + row('Location', s.country) + row('Status', s.status);
     });
 
     sb.from('enrolments').select('*').eq('student_id', user.id)
       .order('start_date', { ascending: false }).then(function (r) {
-        var rows = r.data || [];
-        var el = $('courses');
-        if (r.error)   { el.innerHTML = '<div class="empty">Could not load your courses. Please contact the training office.</div>'; return; }
+        var rows = r.data || [], el = $('courses');
+        if (r.error)      { el.innerHTML = '<div class="empty">Could not load your courses. Please contact the training office.</div>'; return; }
+        MY_COURSES = rows.map(function (x) { return x.course_slug; }).filter(Boolean);
+        // resources depend on knowing the student's courses, so load them after enrolments
+        loadResources(user);
         if (!rows.length) { el.innerHTML = '<div class="empty">You have no course enrolments recorded yet. If you have just enrolled, it may take a day to appear here — contact us if it doesn\'t.</div>'; return; }
         el.innerHTML = rows.map(course).join('');
       });
 
-    sb.from('resources').select('*').order('sort_order', { ascending: true }).then(function (r) {
-      var rows = r.data || [];
-      var el = $('resources');
-      if (!rows.length) { el.innerHTML = '<div class="empty">No documents have been shared with you yet.</div>'; return; }
-      el.innerHTML = rows.map(function (x) {
-        return '<a class="link-row" href="' + esc(x.url) + '" target="_blank" rel="noopener">' +
-               '<span class="ic">' + esc((x.kind || 'L').charAt(0).toUpperCase()) + '</span>' +
-               '<span><b>' + esc(x.title) + '</b><span>' + esc(x.description || '') + '</span></span></a>';
-      }).join('');
-    });
-
     sb.from('announcements').select('*').order('published_at', { ascending: false })
       .limit(6).then(function (r) {
-        var rows = r.data || [];
-        var el = $('announcements');
+        var rows = r.data || [], el = $('announcements');
         if (!rows.length) { el.innerHTML = '<div class="empty">Nothing new right now.</div>'; return; }
         el.innerHTML = rows.map(function (a) {
           return '<div class="ann"><time>' + fmtDate(a.published_at) + '</time>' +
@@ -413,37 +407,95 @@ var CONFIG = {
       });
   }
 
+  /* resources, grouped by course then section, with per-student completion ticks */
+  function loadResources(user) {
+    var el = $('resources');
+    Promise.all([
+      sb.from('resources').select('*').order('section').order('sort_order'),
+      sb.from('resource_completions').select('resource_id').eq('student_id', user.id)
+    ]).then(function (res) {
+      var rows = (res[0].data) || [];
+      DONE = {};
+      ((res[1].data) || []).forEach(function (c) { DONE[c.resource_id] = true; });
+
+      // only show general resources plus those for courses this student is enrolled in
+      var mine = rows.filter(function (x) {
+        return !x.course_slug || MY_COURSES.indexOf(x.course_slug) > -1;
+      });
+      if (!mine.length) { el.innerHTML = '<div class="empty">No documents have been shared with you yet.</div>'; return; }
+
+      var byCourse = {};
+      mine.forEach(function (x) {
+        var key = x.course_slug || '__general';
+        (byCourse[key] = byCourse[key] || []).push(x);
+      });
+
+      var html = '';
+      Object.keys(byCourse).sort(function (a) { return a === '__general' ? 1 : -1; }).forEach(function (key) {
+        var items = byCourse[key];
+        var label = key === '__general' ? 'General resources' : (items[0].course_name || courseLabel(key));
+        html += '<div class="res-group"><p class="res-course">' + esc(label) + '</p>';
+        var bySection = {};
+        items.forEach(function (x) { (bySection[x.section || 'Documents'] = bySection[x.section || 'Documents'] || []).push(x); });
+        Object.keys(bySection).forEach(function (sec) {
+          html += '<p class="res-head">' + esc(sec) + '</p>';
+          html += bySection[sec].map(function (x) {
+            return '<div class="link-row">' +
+              '<span class="ic">' + esc((x.kind || 'L').charAt(0).toUpperCase()) + '</span>' +
+              '<a href="' + esc(x.url) + '" target="_blank" rel="noopener" style="flex:1;text-decoration:none">' +
+              '<b>' + esc(x.title) + '</b><span>' + esc(x.description || '') + '</span></a>' +
+              '<button class="tick' + (DONE[x.id] ? ' done' : '') + '" data-tick="' + x.id +
+              '" title="Mark as done" aria-label="Mark as done">' + (DONE[x.id] ? '✓' : '') + '</button></div>';
+          }).join('');
+        });
+        html += '</div>';
+      });
+      el.innerHTML = html;
+    });
+  }
+  function courseLabel(slug) {
+    return slug.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
+  document.addEventListener('click', function (ev) {
+    var id = ev.target.dataset && ev.target.dataset.tick;
+    if (!id) return;
+    sb.auth.getUser().then(function (u) {
+      var uid = u.data.user.id, btn = ev.target;
+      if (DONE[id]) {
+        sb.from('resource_completions').delete().eq('student_id', uid).eq('resource_id', id).then(function () {
+          DONE[id] = false; btn.classList.remove('done'); btn.textContent = '';
+        });
+      } else {
+        sb.from('resource_completions').insert({ student_id: uid, resource_id: Number(id) }).then(function () {
+          DONE[id] = true; btn.classList.add('done'); btn.textContent = '✓';
+        });
+      }
+    });
+  });
+
   function row(label, value) {
     return '<div class="detail"><span>' + esc(label) + '</span><b>' + esc(value || '—') + '</b></div>';
   }
-
+  function kv(label, value) {
+    return '<div><span>' + esc(label) + '</span><b>' + esc(value || '—') + '</b></div>';
+  }
   function course(c) {
     var pct = Math.max(0, Math.min(100, Number(c.progress_pct) || 0));
     return '<div class="course">' +
       '<div class="course-top"><h3>' + esc(c.course_name) + '</h3>' +
       '<span class="badge ' + badgeClass(c.status) + '">' + esc(c.status || 'Enrolled') + '</span></div>' +
-      '<div class="kv">' +
-        kv('Cohort', c.cohort) +
-        kv('Starts', fmtDate(c.start_date)) +
-        kv('Ends', fmtDate(c.end_date)) +
-        kv('Instructor', c.instructor) +
-        kv('Location', c.location) +
-      '</div>' +
+      '<div class="kv">' + kv('Cohort', c.cohort) + kv('Starts', fmtDate(c.start_date)) +
+        kv('Ends', fmtDate(c.end_date)) + kv('Instructor', c.instructor) + kv('Location', c.location) + '</div>' +
       '<div class="bar-row"><span>Progress</span><span>' + pct + '%</span></div>' +
       '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
       (c.notes ? '<p class="note">' + esc(c.notes) + '</p>' : '') +
     '</div>';
   }
 
-  function kv(label, value) {
-    return '<div><span>' + esc(label) + '</span><b>' + esc(value || '—') + '</b></div>';
-  }
-
-  /* ---------- start ---------- */
   sb.auth.getSession().then(function (r) {
     var session = r.data && r.data.session;
-    if (session && session.user) { boot(session.user); }
-    else { show('login'); }
+    if (session && session.user) { boot(session.user); } else { show('login'); }
   });
 })();
 </script>

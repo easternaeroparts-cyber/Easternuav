@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — Eastern UAV Student Portal</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1D3461">
+<link rel="icon" href="/images/icon-512.png" type="image/png">
+<link rel="stylesheet" href="/css/site.css">
+<style>
+body{background:var(--grey)}
+[hidden]{display:none!important}
+
+.atop{background:var(--navy);color:#fff;position:sticky;top:0;z-index:40}
+.atop .wrap{display:flex;align-items:center;gap:18px;height:70px}
+.atop .mark{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff}
+.atop .mark img{height:38px}
+.atop .mark b{font-size:19px;font-weight:700;display:block;line-height:1}
+.atop .mark i{font-style:normal;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6);display:block;margin-top:3px}
+.atop .sp{margin-left:auto}
+.atop .me{font-size:13.5px;color:rgba(255,255,255,.75)}
+.btn-ghost-w{border:1px solid rgba(255,255,255,.45);color:#fff;background:none;padding:9px 15px;border-radius:8px;
+  font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.btn-ghost-w:hover{background:rgba(255,255,255,.12)}
+
+.tabs{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:70px;z-index:35}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:16px 18px;font:inherit;font-size:14.5px;
+  font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--navy)}
+.tab.on{color:var(--navy);border-bottom-color:var(--red)}
+
+main{padding:32px 0 80px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;margin-bottom:24px;box-shadow:var(--shadow)}
+.card h2{font-size:20px;color:var(--navy);margin-bottom:4px}
+.card .hint{color:var(--muted);font-size:14px;margin-bottom:20px}
+.card h3{font-size:16px;color:var(--navy);margin:0 0 14px}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:32px;color:var(--navy);line-height:1.1}
+.stat span{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);
+  padding:0 12px 10px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:13px 12px 13px 0;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td b{color:var(--navy)}
+.tbl-wrap{overflow-x:auto}
+
+.badge{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;border-radius:999px;
+  padding:5px 11px;white-space:nowrap;border:1px solid;display:inline-block}
+.badge.active{color:#1a6b47;border-color:#bde3d0;background:#e9f7f0}
+.badge.upcoming{color:#8a5d00;border-color:#f0dcae;background:#fdf5e3}
+.badge.done{color:#1d4e89;border-color:#c3d7ef;background:#eaf2fb}
+.badge.other{color:var(--muted);border-color:var(--line);background:var(--grey)}
+.badge.open{color:#1a6b47;border-color:#bde3d0;background:#e9f7f0}
+.badge.shut{color:#8e2226;border-color:#f3c2c2;background:#fdeaea}
+
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 18px}
+label{display:block;font-size:13px;font-weight:700;color:var(--ink);margin:0 0 6px}
+input,select,textarea{width:100%;background:#fff;border:1px solid var(--line);border-radius:9px;color:var(--ink);
+  padding:11px 13px;font:inherit;font-size:15px;margin-bottom:14px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(29,52,97,.10)}
+textarea{min-height:90px;resize:vertical}
+.mini-btn{background:none;border:1px solid var(--line);border-radius:7px;padding:6px 11px;font:inherit;font-size:12.5px;
+  font-weight:600;color:var(--navy);cursor:pointer;white-space:nowrap}
+.mini-btn:hover{border-color:var(--navy)}
+.mini-btn.danger{color:#8e2226}
+.mini-btn.danger:hover{border-color:#8e2226;background:#fdeaea}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.msg{border-radius:10px;padding:12px 15px;font-size:14.5px;margin-bottom:16px}
+.msg.err{background:#fdeaea;border:1px solid #f3c2c2;color:#8e2226}
+.msg.ok{background:#e9f7f0;border:1px solid #bde3d0;color:#1a6b47}
+.empty{color:var(--muted);font-size:15px;border:1px dashed #d3d9e2;border-radius:12px;padding:22px;text-align:center;background:#fafbfc}
+
+/* login */
+.login-shell{min-height:100vh;display:grid;place-items:center;padding:40px 20px;
+  background:linear-gradient(160deg,var(--navy-deep),var(--navy-2))}
+.login{width:100%;max-width:410px}
+.login .logo{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:24px}
+.login .logo img{height:52px}
+.login .logo b{display:block;font-size:23px;color:#fff;line-height:1}
+.login .logo i{display:block;font-style:normal;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:4px;font-weight:600}
+.login .box{background:#fff;border-radius:18px;padding:32px 28px;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.login h1{font-size:25px;color:var(--navy);text-align:center;margin-bottom:6px}
+.login .sub{color:var(--muted);font-size:14.5px;text-align:center;margin-bottom:24px}
+
+.setup{max-width:740px;margin:70px auto;padding:32px;border:1px solid #f0dcae;background:#fdf5e3;border-radius:16px}
+.setup h2{font-size:24px;color:#8a5d00;margin-bottom:12px}
+.setup p{color:#6b5410;font-size:15.5px}
+.setup code{background:#fff;padding:2px 7px;border-radius:5px;font-size:14px;border:1px solid #f0dcae}
+
+@media(max-width:760px){ .frow2,.frow3{grid-template-columns:1fr} .atop .me{display:none} }
+</style>
+</head>
+<body>
+
+<div id="setupNotice" class="setup" hidden>
+  <h2>Not connected yet</h2>
+  <p>Paste your Supabase project URL and <b>public anon key</b> into the <code>CONFIG</code> block at the bottom of
+  <code>portal/admin/index.html</code>. Same two values as the student portal.</p>
+</div>
+
+<!-- LOGIN -->
+<div id="loginView" class="login-shell" hidden>
+  <div class="login">
+    <div class="logo">
+      <img src="/images/logo-light.png" alt="">
+      <span><b>Eastern UAV</b><i>Portal Admin</i></span>
+    </div>
+    <div class="box">
+      <h1>Admin sign in</h1>
+      <p class="sub">Staff access only.</p>
+      <div id="loginMsg" class="msg" hidden></div>
+      <form id="loginForm">
+        <label for="e">Email</label>
+        <input id="e" type="email" required autocomplete="email">
+        <label for="p">Password</label>
+        <input id="p" type="password" required autocomplete="current-password">
+        <button class="btn btn-red" type="submit" id="loginBtn" style="width:100%">Sign in</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appView" hidden>
+  <div class="atop">
+    <div class="wrap">
+      <a class="mark" href="/portal/admin/">
+        <img src="/images/logo-light.png" alt="">
+        <span><b>Eastern UAV</b><i>Portal Admin</i></span>
+      </a>
+      <div class="sp"></div>
+      <span class="me" id="me">—</span>
+      <button class="btn-ghost-w" id="signOut">Sign out</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="wrap">
+      <button class="tab on" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="students">Students</button>
+      <button class="tab" data-tab="enrolments">Enrolments</button>
+      <button class="tab" data-tab="courses">Courses</button>
+      <button class="tab" data-tab="announcements">Announcements</button>
+      <button class="tab" data-tab="resources">Documents</button>
+    </div>
+  </div>
+
+  <main>
+    <div class="wrap">
+      <div id="globalMsg" class="msg" hidden></div>
+
+      <!-- OVERVIEW -->
+      <section data-panel="overview">
+        <div class="stats" id="stats"></div>
+        <div class="card">
+          <h2>Recent enrolments</h2>
+          <p class="hint">The ten most recently added.</p>
+          <div class="tbl-wrap" id="recent"></div>
+        </div>
+      </section>
+
+      <!-- STUDENTS -->
+      <section data-panel="students" hidden>
+        <div class="card">
+          <h2>Students</h2>
+          <p class="hint">Everyone with a portal account. Students create their own login at
+            <a href="/portal/">easternuav.com/portal/</a> — you enrol them here afterwards.</p>
+          <input id="stuSearch" type="search" placeholder="Search by name, email or student ID…" style="max-width:340px">
+          <div class="tbl-wrap" id="students"></div>
+        </div>
+      </section>
+
+      <!-- ENROLMENTS -->
+      <section data-panel="enrolments" hidden>
+        <div class="card">
+          <h2>Add an enrolment</h2>
+          <p class="hint">Put a student on a course. Only courses marked open appear here.</p>
+          <form id="enrolForm">
+            <div class="frow2">
+              <div>
+                <label for="enStudent">Student</label>
+                <select id="enStudent" required></select>
+              </div>
+              <div>
+                <label for="enCourse">Course</label>
+                <select id="enCourse" required></select>
+              </div>
+              <div>
+                <label for="enCohort">Cohort</label>
+                <input id="enCohort" placeholder="Kathmandu — Oct 2026">
+              </div>
+              <div>
+                <label for="enLocation">Location</label>
+                <input id="enLocation" placeholder="Kathmandu">
+              </div>
+            </div>
+            <div class="frow3">
+              <div><label for="enStart">Start date</label><input id="enStart" type="date"></div>
+              <div><label for="enEnd">End date</label><input id="enEnd" type="date"></div>
+              <div><label for="enInstructor">Instructor</label><input id="enInstructor"></div>
+            </div>
+            <label for="enNotes">Notes for the student</label>
+            <textarea id="enNotes" placeholder="Anything they should know — what to bring, timing changes…"></textarea>
+            <button class="btn btn-red" type="submit">Add enrolment</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2>All enrolments</h2>
+          <p class="hint">Change status or progress and it updates on the student's dashboard immediately.</p>
+          <div class="tbl-wrap" id="enrolments"></div>
+        </div>
+      </section>
+
+      <!-- COURSES -->
+      <section data-panel="courses" hidden>
+        <div class="card">
+          <h2>Course catalogue</h2>
+          <p class="hint">Which courses you're currently offering. Closed courses stay in the list but can't be enrolled into.</p>
+          <div class="tbl-wrap" id="courses"></div>
+        </div>
+        <div class="card">
+          <h2>Add a course</h2>
+          <form id="courseForm">
+            <div class="frow3">
+              <div><label for="cTitle">Title</label><input id="cTitle" required placeholder="Remote Pilot Licence"></div>
+              <div><label for="cSlug">Slug</label><input id="cSlug" required placeholder="remote-pilot-licence"></div>
+              <div>
+                <label for="cCat">Category</label>
+                <select id="cCat">
+                  <option>Foundation</option><option>Licensing</option><option>Endorsements</option>
+                  <option>Specialist</option><option>Instructor &amp; Organisational</option><option>Groups &amp; Institutions</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-red" type="submit">Add course</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ANNOUNCEMENTS -->
+      <section data-panel="announcements" hidden>
+        <div class="card">
+          <h2>Post an announcement</h2>
+          <p class="hint">Appears on every student's dashboard.</p>
+          <form id="annForm">
+            <label for="anTitle">Title</label>
+            <input id="anTitle" required placeholder="October cohort timetable published">
+            <label for="anBody">Message</label>
+            <textarea id="anBody" required placeholder="Keep it short and specific."></textarea>
+            <button class="btn btn-red" type="submit">Post announcement</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2>Posted</h2>
+          <div class="tbl-wrap" id="announcements"></div>
+        </div>
+      </section>
+
+      <!-- RESOURCES -->
+      <section data-panel="resources" hidden>
+        <div class="card">
+          <h2>Share a document or link</h2>
+          <p class="hint">Visible to all signed-in students. Host files in Google Drive and paste the share link.</p>
+          <form id="resForm">
+            <div class="frow2">
+              <div><label for="rTitle">Title</label><input id="rTitle" required placeholder="Course handbook (PDF)"></div>
+              <div>
+                <label for="rKind">Type</label>
+                <select id="rKind"><option>Doc</option><option>Form</option><option>Link</option><option>Video</option><option>Folder</option></select>
+              </div>
+            </div>
+            <div class="frow2">
+              <div>
+                <label for="rCourse">Course</label>
+                <select id="rCourse"><option value="">All students (general resource)</option></select>
+              </div>
+              <div>
+                <label for="rSection">Section</label>
+                <select id="rSection">
+                  <option>Student Documents</option>
+                  <option>Course Material</option>
+                  <option>Regulatory &amp; Reference</option>
+                  <option>Aircraft &amp; Equipment</option>
+                  <option>Weather &amp; Planning</option>
+                  <option>Forms</option>
+                </select>
+              </div>
+            </div>
+            <label for="rUrl">Link</label>
+            <input id="rUrl" type="url" required placeholder="https://drive.google.com/…">
+            <label for="rDesc">Short description</label>
+            <input id="rDesc" placeholder="Syllabus, timetable and assessment criteria">
+            <button class="btn btn-red" type="submit">Add document</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2>Shared documents</h2>
+          <div class="tbl-wrap" id="resources"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js"></script>
+<script>
+/* =======================================================================
+   CONFIG — same two values as the student portal.
+   Both are PUBLIC and safe to publish. Never the service_role key.
+   ======================================================================= */
+var CONFIG = {
+  SUPABASE_URL:      'https://yccxbftaopwbuyukjvzp.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljY3hiZnRhb3B3YnV5dWtqdnpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NDI3MjAsImV4cCI6MjEwNDMxODcyMH0.0UiSOt7aN7KdE0wpR963zVV-vHAs4wfE_iWS7sgd6sM'
+};
+/* ===================================================================== */
+
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var ok = CONFIG.SUPABASE_URL.indexOf('supabase.co') > -1 && CONFIG.SUPABASE_ANON_KEY.length > 30;
+  if (!ok) { $('setupNotice').hidden = false; return; }
+
+  var sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+  var STATE = { students: [], courses: [], enrolments: [], resources: [] };
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fmt(d){ if(!d) return '—'; var x=new Date(d); return isNaN(x)?d:
+    x.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}); }
+  function badge(s){ var t=(s||'').toLowerCase();
+    var c = (t.indexOf('progress')>-1||t==='active'||t==='enrolled') ? 'active'
+          : (t.indexOf('upcoming')>-1||t.indexOf('schedul')>-1) ? 'upcoming'
+          : (t.indexOf('complete')>-1||t.indexOf('pass')>-1) ? 'done' : 'other';
+    return '<span class="badge '+c+'">'+esc(s||'Enrolled')+'</span>'; }
+  function flash(text, kind){
+    var m=$('globalMsg'); if(!text){m.hidden=true;return;}
+    m.textContent=text; m.className='msg '+(kind||'ok'); m.hidden=false;
+    window.scrollTo({top:0,behavior:'smooth'});
+    setTimeout(function(){ m.hidden=true; }, 6000);
+  }
+
+  /* ---------- auth ---------- */
+  $('loginForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var b=$('loginBtn'), t=b.textContent; b.disabled=true; b.textContent='Please wait…';
+    sb.auth.signInWithPassword({ email:$('e').value.trim(), password:$('p').value }).then(function(r){
+      b.disabled=false; b.textContent=t;
+      var m=$('loginMsg');
+      if(r.error){ m.textContent=r.error.message; m.className='msg err'; m.hidden=false; return; }
+      gate(r.data.user);
+    });
+  });
+  $('signOut').addEventListener('click', function(){ sb.auth.signOut().then(function(){ location.reload(); }); });
+
+  /* only users listed in the admins table get in */
+  function gate(user){
+    sb.from('admins').select('id').eq('id', user.id).maybeSingle().then(function(r){
+      if (!r.data) {
+        sb.auth.signOut();
+        var m=$('loginMsg');
+        m.textContent='That account is not an administrator. Students sign in at easternuav.com/portal/';
+        m.className='msg err'; m.hidden=false;
+        $('loginView').hidden=false; $('appView').hidden=true;
+        return;
+      }
+      $('loginView').hidden=true; $('appView').hidden=false;
+      $('me').textContent=user.email;
+      loadAll();
+    });
+  }
+
+  /* ---------- tabs ---------- */
+  [].forEach.call(document.querySelectorAll('.tab'), function(t){
+    t.addEventListener('click', function(){
+      [].forEach.call(document.querySelectorAll('.tab'), function(x){ x.classList.remove('on'); });
+      t.classList.add('on');
+      [].forEach.call(document.querySelectorAll('[data-panel]'), function(p){
+        p.hidden = p.getAttribute('data-panel') !== t.getAttribute('data-tab');
+      });
+    });
+  });
+
+  /* ---------- load ---------- */
+  function loadAll(){ loadStudents(); loadCourses(); loadEnrolments(); loadAnnouncements(); loadResources(); }
+
+  function loadStudents(){
+    sb.from('students').select('*').order('full_name').then(function(r){
+      STATE.students = r.data || [];
+      renderStudents();
+      fillStudentSelect();
+      renderStats();
+    });
+  }
+  function loadCourses(){
+    sb.from('courses').select('*').order('category').then(function(r){
+      STATE.courses = r.data || [];
+      renderCourses(); fillCourseSelect(); renderStats(); if(STATE.resources.length) renderResources(STATE.resources);
+    });
+  }
+  function loadEnrolments(){
+    sb.from('enrolments').select('*').order('created_at',{ascending:false}).then(function(r){
+      STATE.enrolments = r.data || [];
+      renderEnrolments(); renderRecent(); renderStats();
+    });
+  }
+  function loadAnnouncements(){
+    sb.from('announcements').select('*').order('published_at',{ascending:false}).then(function(r){
+      renderAnnouncements(r.data||[]);
+    });
+  }
+  function loadResources(){
+    sb.from('resources').select('*').order('section').order('sort_order').then(function(r){ STATE.resources = r.data||[]; renderResources(STATE.resources); });
+  }
+
+  /* ---------- render ---------- */
+  function renderStats(){
+    var active = STATE.enrolments.filter(function(e){
+      var s=(e.status||'').toLowerCase(); return s.indexOf('progress')>-1||s==='enrolled'||s==='active'; }).length;
+    var open = STATE.courses.filter(function(c){ return c.is_open; }).length;
+    $('stats').innerHTML =
+      stat(STATE.students.length,'Students') + stat(active,'Active enrolments') +
+      stat(open,'Courses open') + stat(STATE.enrolments.length,'Enrolments total');
+  }
+  function stat(n,l){ return '<div class="stat"><b>'+n+'</b><span>'+l+'</span></div>'; }
+
+  function nameOf(id){
+    var s = STATE.students.filter(function(x){return x.id===id;})[0];
+    return s ? (s.full_name || s.student_ref || id.slice(0,8)) : '(deleted student)';
+  }
+
+  function renderRecent(){
+    var rows = STATE.enrolments.slice(0,10);
+    if(!rows.length){ $('recent').innerHTML='<div class="empty">No enrolments yet.</div>'; return; }
+    $('recent').innerHTML = '<table><thead><tr><th>Student</th><th>Course</th><th>Cohort</th><th>Status</th></tr></thead><tbody>' +
+      rows.map(function(e){ return '<tr><td><b>'+esc(nameOf(e.student_id))+'</b></td><td>'+esc(e.course_name)+
+        '</td><td>'+esc(e.cohort||'—')+'</td><td>'+badge(e.status)+'</td></tr>'; }).join('') + '</tbody></table>';
+  }
+
+  function renderStudents(){
+    var q = ($('stuSearch').value||'').toLowerCase();
+    var rows = STATE.students.filter(function(s){
+      if(!q) return true;
+      return ((s.full_name||'')+(s.email||'')+(s.student_ref||'')).toLowerCase().indexOf(q)>-1;
+    });
+    if(!rows.length){ $('students').innerHTML='<div class="empty">No students yet. They appear here once they create an account at easternuav.com/portal/</div>'; return; }
+    $('students').innerHTML = '<table><thead><tr><th>Name</th><th>Contact</th><th>Student ID</th><th>Status</th><th>Enrolments</th><th></th></tr></thead><tbody>' +
+      rows.map(function(s){
+        var n = STATE.enrolments.filter(function(e){return e.student_id===s.id;}).length;
+        return '<tr><td><b>'+esc(s.full_name||'—')+'</b></td>'+
+          '<td>'+esc(s.email||'—')+'<br><span style="color:var(--muted)">'+esc(s.phone||'')+'</span></td>'+
+          '<td>'+esc(s.student_ref||'—')+'</td>'+
+          '<td>'+esc(s.status||'Active')+'</td><td>'+n+'</td>'+
+          '<td class="actions"><button class="mini-btn" data-edit-student="'+s.id+'">Edit</button></td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+  $('stuSearch').addEventListener('input', renderStudents);
+
+  function renderCourses(){
+    if(!STATE.courses.length){ $('courses').innerHTML='<div class="empty">No courses yet. Add one below, or run the seed SQL from the setup guide to load all 22.</div>'; return; }
+    $('courses').innerHTML = '<table><thead><tr><th>Course</th><th>Category</th><th>Enrolments</th><th>Status</th><th></th></tr></thead><tbody>' +
+      STATE.courses.map(function(c){
+        var n = STATE.enrolments.filter(function(e){return e.course_slug===c.slug;}).length;
+        return '<tr><td><b>'+esc(c.title)+'</b><br><span style="color:var(--muted);font-size:13px">'+esc(c.slug)+'</span></td>'+
+          '<td>'+esc(c.category||'—')+'</td><td>'+n+'</td>'+
+          '<td><span class="badge '+(c.is_open?'open':'shut')+'">'+(c.is_open?'Open':'Closed')+'</span></td>'+
+          '<td class="actions"><button class="mini-btn" data-toggle-course="'+esc(c.slug)+'">'+
+          (c.is_open?'Close':'Open')+'</button></td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  function renderEnrolments(){
+    if(!STATE.enrolments.length){ $('enrolments').innerHTML='<div class="empty">No enrolments yet.</div>'; return; }
+    $('enrolments').innerHTML = '<table><thead><tr><th>Student</th><th>Course</th><th>Dates</th><th>Status</th><th>Progress</th><th></th></tr></thead><tbody>' +
+      STATE.enrolments.map(function(e){
+        return '<tr><td><b>'+esc(nameOf(e.student_id))+'</b><br><span style="color:var(--muted);font-size:13px">'+esc(e.cohort||'')+'</span></td>'+
+          '<td>'+esc(e.course_name)+'</td>'+
+          '<td>'+fmt(e.start_date)+'<br><span style="color:var(--muted)">'+fmt(e.end_date)+'</span></td>'+
+          '<td><select data-status="'+e.id+'" style="margin:0;padding:7px 9px;font-size:13.5px">'+
+            ['Enrolled','In progress','Upcoming','Completed','Withdrawn'].map(function(s){
+              return '<option'+(s===e.status?' selected':'')+'>'+s+'</option>'; }).join('')+'</select></td>'+
+          '<td><input type="number" min="0" max="100" value="'+(e.progress_pct||0)+'" data-progress="'+e.id+'" '+
+            'style="margin:0;padding:7px 9px;width:78px;font-size:13.5px"></td>'+
+          '<td class="actions"><button class="mini-btn danger" data-del-enrol="'+e.id+'">Remove</button></td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  function renderAnnouncements(rows){
+    if(!rows.length){ $('announcements').innerHTML='<div class="empty">Nothing posted yet.</div>'; return; }
+    $('announcements').innerHTML = '<table><thead><tr><th>Date</th><th>Title</th><th>Message</th><th></th></tr></thead><tbody>'+
+      rows.map(function(a){ return '<tr><td style="white-space:nowrap">'+fmt(a.published_at)+'</td>'+
+        '<td><b>'+esc(a.title)+'</b></td><td style="color:var(--muted)">'+esc(a.body||'')+'</td>'+
+        '<td class="actions"><button class="mini-btn danger" data-del-ann="'+a.id+'">Delete</button></td></tr>'; }).join('')+
+      '</tbody></table>';
+  }
+
+  function courseTitle(slug){
+    if(!slug) return 'All students';
+    var c = STATE.courses.filter(function(x){return x.slug===slug;})[0];
+    return c ? c.title : slug;
+  }
+  function renderResources(rows){
+    if(!rows.length){ $('resources').innerHTML='<div class="empty">No documents shared yet.</div>'; return; }
+    $('resources').innerHTML = '<table><thead><tr><th>Title</th><th>Course</th><th>Section</th><th>Type</th><th>Link</th><th></th></tr></thead><tbody>'+
+      rows.map(function(x){ return '<tr><td><b>'+esc(x.title)+'</b><br><span style="color:var(--muted);font-size:13px">'+esc(x.description||'')+'</span></td>'+
+        '<td>'+esc(courseTitle(x.course_slug))+'</td>'+
+        '<td>'+esc(x.section||'—')+'</td>'+
+        '<td>'+esc(x.kind||'Link')+'</td>'+
+        '<td><a href="'+esc(x.url)+'" target="_blank" rel="noopener" style="color:var(--navy)">Open</a></td>'+
+        '<td class="actions"><button class="mini-btn danger" data-del-res="'+x.id+'">Delete</button></td></tr>'; }).join('')+
+      '</tbody></table>';
+  }
+
+  function fillStudentSelect(){
+    $('enStudent').innerHTML = '<option value="">— choose a student —</option>' +
+      STATE.students.map(function(s){ return '<option value="'+s.id+'">'+esc(s.full_name||s.email||s.id.slice(0,8))+'</option>'; }).join('');
+  }
+  function fillCourseSelect(){
+    var open = STATE.courses.filter(function(c){ return c.is_open; });
+    $('enCourse').innerHTML = '<option value="">— choose a course —</option>' +
+      open.map(function(c){ return '<option value="'+esc(c.slug)+'">'+esc(c.title)+'</option>'; }).join('');
+    $('rCourse').innerHTML = '<option value="">All students (general resource)</option>' +
+      STATE.courses.map(function(c){ return '<option value="'+esc(c.slug)+'">'+esc(c.title)+'</option>'; }).join('');
+  }
+
+  /* ---------- writes ---------- */
+  document.addEventListener('click', function(ev){
+    var t = ev.target;
+
+    if (t.dataset.toggleCourse){
+      var c = STATE.courses.filter(function(x){return x.slug===t.dataset.toggleCourse;})[0];
+      sb.from('courses').update({is_open: !c.is_open}).eq('slug', c.slug).then(function(r){
+        if(r.error) return flash(r.error.message,'err');
+        flash(c.title + (c.is_open ? ' closed for enrolment.' : ' is now open for enrolment.'));
+        loadCourses();
+      });
+    }
+
+    if (t.dataset.delEnrol){
+      if(!confirm('Remove this enrolment? The student will no longer see it.')) return;
+      sb.from('enrolments').delete().eq('id', t.dataset.delEnrol).then(function(r){
+        if(r.error) return flash(r.error.message,'err');
+        flash('Enrolment removed.'); loadEnrolments();
+      });
+    }
+    if (t.dataset.delAnn){
+      if(!confirm('Delete this announcement?')) return;
+      sb.from('announcements').delete().eq('id', t.dataset.delAnn).then(function(r){
+        if(r.error) return flash(r.error.message,'err');
+        flash('Announcement deleted.'); loadAnnouncements();
+      });
+    }
+    if (t.dataset.delRes){
+      if(!confirm('Delete this document link?')) return;
+      sb.from('resources').delete().eq('id', t.dataset.delRes).then(function(r){
+        if(r.error) return flash(r.error.message,'err');
+        flash('Document removed.'); loadResources();
+      });
+    }
+
+    if (t.dataset.editStudent){
+      var s = STATE.students.filter(function(x){return x.id===t.dataset.editStudent;})[0];
+      var name = prompt('Full name', s.full_name||''); if(name===null) return;
+      var ref  = prompt('Student ID', s.student_ref||''); if(ref===null) return;
+      var st   = prompt('Status (Active / Inactive)', s.status||'Active'); if(st===null) return;
+      sb.from('students').update({full_name:name, student_ref:ref, status:st}).eq('id', s.id).then(function(r){
+        if(r.error) return flash(r.error.message,'err');
+        flash('Student updated.'); loadStudents();
+      });
+    }
+  });
+
+  document.addEventListener('change', function(ev){
+    var t = ev.target;
+    if (t.dataset.status){
+      sb.from('enrolments').update({status:t.value}).eq('id', t.dataset.status).then(function(r){
+        if(r.error) return flash(r.error.message,'err');
+        flash('Status updated.'); loadEnrolments();
+      });
+    }
+    if (t.dataset.progress){
+      var v = Math.max(0, Math.min(100, Number(t.value)||0));
+      sb.from('enrolments').update({progress_pct:v}).eq('id', t.dataset.progress).then(function(r){
+        if(r.error) return flash(r.error.message,'err');
+        flash('Progress updated.');
+      });
+    }
+  });
+
+  $('enrolForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var slug = $('enCourse').value;
+    var course = STATE.courses.filter(function(c){return c.slug===slug;})[0];
+    if(!course) return flash('Choose a course.','err');
+    sb.from('enrolments').insert({
+      student_id: $('enStudent').value, course_slug: slug, course_name: course.title,
+      cohort: $('enCohort').value || null, location: $('enLocation').value || null,
+      start_date: $('enStart').value || null, end_date: $('enEnd').value || null,
+      instructor: $('enInstructor').value || null, notes: $('enNotes').value || null,
+      status: 'Enrolled', progress_pct: 0
+    }).then(function(r){
+      if(r.error) return flash(r.error.message,'err');
+      ev.target.reset(); flash('Enrolment added — it is on their dashboard now.'); loadEnrolments();
+    });
+  });
+
+  $('courseForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    sb.from('courses').insert({
+      slug: $('cSlug').value.trim(), title: $('cTitle').value.trim(),
+      category: $('cCat').value, is_open: true
+    }).then(function(r){
+      if(r.error) return flash(r.error.message,'err');
+      ev.target.reset(); flash('Course added and open for enrolment.'); loadCourses();
+    });
+  });
+
+  $('annForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    sb.from('announcements').insert({ title:$('anTitle').value.trim(), body:$('anBody').value.trim() })
+      .then(function(r){
+        if(r.error) return flash(r.error.message,'err');
+        ev.target.reset(); flash('Announcement posted to all students.'); loadAnnouncements();
+      });
+  });
+
+  $('resForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    sb.from('resources').insert({ title:$('rTitle').value.trim(), url:$('rUrl').value.trim(),
+      kind:$('rKind').value, description:$('rDesc').value.trim() || null,
+      course_slug:$('rCourse').value || null, section:$('rSection').value, sort_order:100 })
+      .then(function(r){
+        if(r.error) return flash(r.error.message,'err');
+        ev.target.reset(); flash('Document shared with students.'); loadResources();
+      });
+  });
+
+  /* ---------- start ---------- */
+  sb.auth.getSession().then(function(r){
+    var s = r.data && r.data.session;
+    if (s && s.user) { gate(s.user); } else { $('loginView').hidden = false; }
+  });
+})();
+</script>
+</body>
+</html>
