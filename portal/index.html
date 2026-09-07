@@ -266,12 +266,21 @@ var CONFIG = {
 
   if (!configured) { $('setupNotice').hidden = false; return; }
 
-  /* Read this BEFORE creating the client — supabase-js consumes the URL fragment
-     and clears it as soon as it starts up. */
-  var IN_RECOVERY = /(^|[#&?])type=recovery(&|$)/.test(window.location.hash) ||
-                    /(^|[?&])type=recovery(&|$)/.test(window.location.search);
+  /* Read these BEFORE creating the client — supabase-js consumes the URL
+     fragment and clears it as soon as it starts up. */
+  var LANDED      = (window.location.hash || '') + (window.location.search || '');
+  var IN_RECOVERY = /(^|[#&?])type=recovery(&|$)/.test(LANDED);
+  var LINK_ERROR  = /(^|[#&?])error(_code)?=/.test(LANDED);
 
-  var sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+  /* flowType 'implicit' matters: PKCE ties the email link to a code_verifier
+     stored in the browser that ASKED for the reset, so a student who requests
+     it on their phone and opens the link on a laptop gets "Auth session
+     missing". Implicit puts the tokens straight in the link, so it works from
+     any device. */
+  var sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, {
+    auth: { flowType: 'implicit', detectSessionInUrl: true,
+            persistSession: true, autoRefreshToken: true }
+  });
   var mode = 'signin';
   $('yr').textContent = new Date().getFullYear();
 
@@ -370,7 +379,14 @@ var CONFIG = {
       if (pw !== $('p2').value){ done(); say('Those two passwords do not match.'); return; }
       sb.auth.updateUser({ password: pw }).then(function (r) {
         done();
-        if (r.error) { say(r.error.message); return; }
+        if (r.error) {
+          if (/session/i.test(r.error.message)) {
+            setMode('reset');   /* setMode clears the message, so say() comes after it */
+            say('That reset link is no longer valid — links work once and expire after an hour. '
+              + 'Enter your email and we will send a fresh one.');
+          } else { say(r.error.message); }
+          return;
+        }
         /* the recovery link already signed them in, so go straight through */
         IN_RECOVERY = false;
         sb.auth.getUser().then(function (u) {
@@ -546,11 +562,23 @@ var CONFIG = {
      that session looks like an ordinary sign-in and they get the dashboard —
      never the chance to actually set a new password. Two ways to catch it:
      the type=recovery marker in the URL, and Supabase's own event. */
-  function enterRecovery() {
-    if (!IN_RECOVERY) return;
+  function linkDead() {
     show('login');
-    setMode('newpw');
-    say('Choose a new password below. This link works once.', 'ok');
+    setMode('reset');
+    say('That reset link has expired or has already been used. Links work once. '
+      + 'Enter your email below and we will send a fresh one.');
+  }
+
+  /* Only offer the form once a session really exists — otherwise the user fills
+     it in and gets "Auth session missing" on submit, which explains nothing. */
+  function enterRecovery() {
+    sb.auth.getSession().then(function (r) {
+      var s = r.data && r.data.session;
+      if (!s) { linkDead(); return; }
+      show('login');
+      setMode('newpw');
+      say('Choose a new password below.', 'ok');
+    });
   }
 
   sb.auth.onAuthStateChange(function (event) {
@@ -559,7 +587,8 @@ var CONFIG = {
 
   sb.auth.getSession().then(function (r) {
     var session = r.data && r.data.session;
-    if (IN_RECOVERY)                  { enterRecovery(); }
+    if (LINK_ERROR)                   { linkDead(); }
+    else if (IN_RECOVERY)             { enterRecovery(); }
     else if (session && session.user) { boot(session.user); }
     else                              { show('login'); }
   });
