@@ -266,3 +266,9 @@ footer{background:var(--navy-deep);color:rgba(255,255,255,.72);padding:56px 0 28
 }
 @media(max-width:640px){ .g2,.g3,.g4,.mini,.frow{grid-template-columns:1fr} form{padding:24px} }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* Nav "Map" button — outline so it sits beside Contact Us without competing with it */
+.nav-map{border-color:var(--navy);color:var(--navy);background:#fff}
+.nav-map:hover{background:var(--navy);color:#fff}
+.nav-map svg{width:15px;height:15px;flex:none}
+@media(max-width:900px){ .nav-map{justify-content:center} }

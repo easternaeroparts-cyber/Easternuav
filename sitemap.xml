@@ -2,145 +2,151 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://easternuav.com/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://easternuav.com/map/</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://easternuav.com/courses/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/introduction-to-drones/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/drone-safety-airspace-awareness/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/recreational-to-commercial/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/remote-pilot-licence/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/sub-25kg-multirotor/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/aeronautical-radio-operator-certificate/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/licence-conversion/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/sub-150kg-multirotor/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/vtol-powered-lift/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/agriculture-spraying/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/night-operations/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/bvlos/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/mountain-high-altitude-operations/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/emergency-services-response/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/thermal-sensor-operations/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/instructor-assessor/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/operator-certificate-establishment/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/chief-remote-pilot/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/corporate-agency-programs/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/school-university-programs/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/cooperative-ngo-intakes/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://easternuav.com/courses/recurrent-currency-training/</loc>
-    <lastmod>2026-09-04</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
