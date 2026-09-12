@@ -1,6 +1,6 @@
 // Fly Eastern — service worker
 // Bump this version string whenever you upload a new index.html so old caches get replaced.
-const CACHE_VERSION = 'flyeastern-v1';
+const CACHE_VERSION = 'flyeastern-v2';
 const CORE_ASSETS = [
   './',
   'index.html',
