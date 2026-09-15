@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Eastern UAV CRM</title>
+<meta name="description" content="Eastern UAV — flight operations, training and compliance management.">
+<meta name="theme-color" content="#0B2545">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Eastern UAV">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<style>
+/* ===================================================================
+   EASTERN UAV CRM
+   Palette leans on the Nepal flag: crimson #DC143C, blue #003893.
+   =================================================================== */
+:root{
+  --navy:#0B2545; --navy-2:#11325C; --navy-3:#1A4480;
+  --crimson:#DC143C; --crimson-2:#B01030; --crimson-soft:#fdeaee;
+  --blue:#003893; --blue-soft:#e8eefb;
+  --ink:#101722; --body:#33415c; --muted:#697689;
+  --line:#e3e8ef; --line-2:#eef2f7;
+  --bg:#f5f7fa; --card:#ffffff;
+  --green:#0f8a52; --green-soft:#e6f5ed;
+  --amber:#b8760a; --amber-soft:#fdf3e2;
+  --red:#c92a3c; --red-soft:#fdecee;
+  --grey-soft:#eef1f5;
+  --shadow:0 1px 2px rgba(16,23,34,.06), 0 4px 16px rgba(16,23,34,.05);
+  --shadow-lg:0 8px 40px rgba(11,37,69,.18);
+  --rad:10px;
+  --sidebar:248px;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;font-family:var(--sans);font-size:14px;line-height:1.5;
+  color:var(--body);background:var(--bg);-webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+}
+h1,h2,h3,h4{margin:0;color:var(--ink);font-weight:650;letter-spacing:-.011em}
+h1{font-size:21px} h2{font-size:17px} h3{font-size:15px} h4{font-size:13px}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+img{max-width:100%}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+
+/* ---------- Loading / auth gate --------------------------------- */
+#boot{
+  position:fixed;inset:0;display:grid;place-items:center;
+  background:var(--navy);color:#fff;z-index:9000;
+}
+#boot .mark{text-align:center}
+#boot .spin{
+  width:30px;height:30px;margin:16px auto 0;border-radius:50%;
+  border:3px solid rgba(255,255,255,.2);border-top-color:var(--crimson);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- Login ----------------------------------------------- */
+#login{
+  position:fixed;inset:0;z-index:8000;display:grid;
+  grid-template-columns:1.1fr .9fr;background:var(--navy);
+}
+#login .hero{
+  position:relative;padding:48px;display:flex;flex-direction:column;
+  justify-content:space-between;color:#fff;overflow:hidden;
+  background:
+    radial-gradient(1000px 500px at 80% -10%, rgba(220,20,60,.30), transparent 60%),
+    radial-gradient(800px 500px at 10% 110%, rgba(0,56,147,.55), transparent 60%),
+    var(--navy);
+}
+#login .hero::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:190px;opacity:.16;
+  background:no-repeat bottom/cover url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 220'>\
+<path fill='%23ffffff' d='M0 220V150l120-70 90 52 110-92 120 84 95-64 130 96 105-72 120 88 90-56 120 74v30z'/>\
+</svg>");
+}
+#login .hero h1{color:#fff;font-size:34px;line-height:1.15;max-width:15ch}
+#login .hero p{color:rgba(255,255,255,.72);max-width:44ch;font-size:15px}
+#login .hero .dev{font-size:15px;color:rgba(255,255,255,.55);margin-top:2px}
+#login .panel{
+  background:#fff;display:flex;align-items:center;justify-content:center;padding:40px 24px;
+}
+#login .panel .inner{width:100%;max-width:352px}
+.badgeline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:relative;z-index:1}
+.pill-out{
+  border:1px solid rgba(255,255,255,.28);border-radius:100px;padding:5px 12px;
+  font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.85);
+}
+@media (max-width:860px){
+  #login{grid-template-columns:1fr}
+  #login .hero{display:none}
+  #login .panel{align-items:flex-start;padding-top:56px}
+}
+
+/* ---------- App frame ------------------------------------------- */
+#app{display:none;min-height:100%}
+#app.on{display:block}
+
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:var(--sidebar);z-index:60;
+  background:linear-gradient(178deg,var(--navy) 0%,#081c35 100%);
+  color:#c9d4e3;display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top,0px);
+  transition:transform .22s ease;
+}
+.sidebar .brand{
+  display:flex;align-items:center;gap:10px;padding:16px 16px 14px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.sidebar .brand .logo{
+  width:34px;height:34px;flex:0 0 34px;border-radius:8px;
+  background:linear-gradient(135deg,var(--crimson),var(--crimson-2));
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;letter-spacing:-.02em;
+}
+.sidebar .brand b{color:#fff;font-size:14.5px;display:block;line-height:1.2}
+.sidebar .brand span{font-size:11px;color:#7f93ad;letter-spacing:.08em;text-transform:uppercase}
+.navwrap{flex:1;overflow-y:auto;padding:10px 8px 20px;-webkit-overflow-scrolling:touch}
+.navgrp{margin:14px 0 4px;padding:0 10px;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:#5f738c}
+.navlink{
+  display:flex;align-items:center;gap:11px;padding:9px 10px;margin:1px 0;
+  border-radius:8px;color:#b9c7d8;cursor:pointer;font-size:13.5px;
+  border:0;background:none;width:100%;text-align:left;
+}
+.navlink:hover{background:rgba(255,255,255,.07);color:#fff}
+.navlink.on{background:var(--crimson);color:#fff;font-weight:600}
+.navlink.on .ic{opacity:1}
+.navlink .ic{width:17px;height:17px;flex:0 0 17px;opacity:.8}
+.navlink .count{
+  margin-left:auto;background:rgba(255,255,255,.16);color:#fff;border-radius:100px;
+  font-size:11px;padding:1px 7px;font-weight:600;
+}
+.navlink.on .count{background:rgba(0,0,0,.22)}
+.sidefoot{padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));
+  border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:#5f738c}
+
+.scrim{position:fixed;inset:0;background:rgba(8,20,38,.5);z-index:55;display:none}
+.scrim.on{display:block}
+
+.main{margin-left:var(--sidebar);min-height:100vh;display:flex;flex-direction:column}
+.topbar{
+  position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);
+  backdrop-filter:saturate(1.6) blur(8px);border-bottom:1px solid var(--line);
+  padding:calc(10px + env(safe-area-inset-top,0px)) 20px 10px;
+  display:flex;align-items:center;gap:12px;
+}
+.burger{display:none;border:1px solid var(--line);background:#fff;border-radius:8px;
+  width:36px;height:36px;align-items:center;justify-content:center;cursor:pointer;flex:0 0 36px}
+.topbar .ttl{min-width:0}
+.topbar .ttl h1{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .ttl p{margin:1px 0 0;font-size:12px;color:var(--muted)}
+.topbar .spacer{flex:1}
+.clockbox{display:flex;gap:14px;align-items:center;font-variant-numeric:tabular-nums}
+.clockbox div{text-align:right;line-height:1.15}
+.clockbox b{font-size:14px;color:var(--ink);font-weight:650}
+.clockbox span{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.who{display:flex;align-items:center;gap:9px;padding-left:14px;border-left:1px solid var(--line)}
+.avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;
+  background:var(--blue-soft);color:var(--blue);font-weight:700;font-size:12.5px;flex:0 0 32px}
+.who .nm{line-height:1.2}
+.who .nm b{display:block;font-size:13px;color:var(--ink)}
+.who .nm span{font-size:11px;color:var(--muted);text-transform:capitalize}
+
+.content{padding:20px;flex:1;max-width:1420px;width:100%}
+.view{display:none} .view.on{display:block;animation:fade .18s ease}
+@keyframes fade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+@media (max-width:1000px){
+  .sidebar{transform:translateX(-100%);box-shadow:var(--shadow-lg)}
+  .sidebar.open{transform:none}
+  .main{margin-left:0}
+  .burger{display:flex}
+  .content{padding:14px}
+  .clockbox{display:none}
+  .who .nm{display:none}
+  .who{padding-left:0;border-left:0}
+}
+
+/* ---------- Primitives ------------------------------------------ */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);box-shadow:var(--shadow)}
+.card .hd{padding:13px 16px;border-bottom:1px solid var(--line-2);display:flex;
+  align-items:center;gap:10px;flex-wrap:wrap}
+.card .hd h3{flex:1;min-width:120px}
+.card .bd{padding:16px}
+.card .bd.tight{padding:0}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  border:1px solid var(--line);background:#fff;color:var(--ink);
+  padding:8px 14px;border-radius:8px;font-size:13.5px;font-weight:550;
+  cursor:pointer;transition:.13s;white-space:nowrap;
+}
+.btn:hover{background:var(--grey-soft);text-decoration:none}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.pri{background:var(--crimson);border-color:var(--crimson);color:#fff}
+.btn.pri:hover{background:var(--crimson-2);border-color:var(--crimson-2)}
+.btn.nav{background:var(--navy);border-color:var(--navy);color:#fff}
+.btn.nav:hover{background:var(--navy-2)}
+.btn.ok{background:var(--green);border-color:var(--green);color:#fff}
+.btn.ok:hover{filter:brightness(.92)}
+.btn.dang{background:var(--red);border-color:var(--red);color:#fff}
+.btn.dang:hover{filter:brightness(.92)}
+.btn.sm{padding:5px 10px;font-size:12.5px;border-radius:7px}
+.btn.wide{width:100%}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.ghost:hover{background:var(--grey-soft);color:var(--ink)}
+
+.field{margin-bottom:13px}
+.field > label{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:5px}
+.field .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+.inp,select.inp,textarea.inp{
+  width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;
+  background:#fff;font-size:14px;transition:.13s;
+}
+.inp:focus,select.inp:focus,textarea.inp:focus{
+  outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,56,147,.11)
+}
+textarea.inp{min-height:78px;resize:vertical;line-height:1.5}
+select.inp{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23697689' d='M1 1l5 5 5-5'/></svg>");
+  background-repeat:no-repeat;background-position:right 11px center;padding-right:32px}
+.row{display:grid;gap:13px}
+.row.c2{grid-template-columns:1fr 1fr}
+.row.c3{grid-template-columns:repeat(3,1fr)}
+.row.c4{grid-template-columns:repeat(4,1fr)}
+@media (max-width:760px){.row.c2,.row.c3,.row.c4{grid-template-columns:1fr}}
+
+.chk{display:flex;gap:9px;align-items:flex-start;cursor:pointer;padding:3px 0}
+.chk input{width:17px;height:17px;margin:1px 0 0;accent-color:var(--crimson);flex:0 0 17px}
+.chk span{font-size:13.5px}
+
+/* ---------- Tables ---------------------------------------------- */
+/* Grid and flex children default to min-width:auto, which lets a wide
+   table push its card past the viewport. Pin them to 0 so the
+   scroll container below is what actually scrolls. */
+.grid2 > *, .stack > *, .row > *, .main, .content, .card{min-width:0}
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px;min-width:620px}
+table.tbl th{
+  text-align:left;padding:9px 14px;background:#f8fafc;border-bottom:1px solid var(--line);
+  font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:650;
+  white-space:nowrap;position:sticky;top:0;
+}
+table.tbl td{padding:11px 14px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+table.tbl tbody tr:hover{background:#fafbfd}
+table.tbl tbody tr:last-child td{border-bottom:0}
+table.tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
+.mono{font-family:var(--mono);font-size:12.5px}
+
+/* ---------- Pills / badges -------------------------------------- */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:100px;
+  font-size:11.5px;font-weight:600;white-space:nowrap;line-height:1.7}
+.pill.grey{background:var(--grey-soft);color:#4a5769}
+.pill.blue{background:var(--blue-soft);color:var(--blue)}
+.pill.green{background:var(--green-soft);color:var(--green)}
+.pill.amber{background:var(--amber-soft);color:var(--amber)}
+.pill.red{background:var(--red-soft);color:var(--red)}
+.pill.crim{background:var(--crimson-soft);color:var(--crimson-2)}
+.tag{display:inline-block;padding:1px 6px;border-radius:5px;font-size:10.5px;font-weight:700;
+  letter-spacing:.05em;background:#3d4c63;color:#fff;vertical-align:middle}
+.tag.TRA{background:#2f6fb5} .tag.OPS{background:#0f8a52} .tag.PROF{background:#7a4bbd}
+
+/* ---------- Stat tiles ------------------------------------------ */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:13px;margin-bottom:18px}
+.tile{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--rad);
+  padding:15px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue)}
+.tile.crim::before{background:var(--crimson)}
+.tile.green::before{background:var(--green)}
+.tile.amber::before{background:var(--amber)}
+.tile.red::before{background:var(--red)}
+.tile .lbl{font-size:11.5px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+.tile .val{font-size:27px;font-weight:700;color:var(--ink);line-height:1.15;margin-top:4px;
+  font-variant-numeric:tabular-nums}
+.tile .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.tile.link{cursor:pointer}
+.tile.link:hover{border-color:var(--blue);box-shadow:0 2px 10px rgba(0,56,147,.1)}
+
+.grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
+@media (max-width:1000px){.grid2{grid-template-columns:1fr}}
+
+/* ---------- Empty / toast / modal ------------------------------- */
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--ink);margin-bottom:4px;font-size:14.5px}
+.empty p{margin:0 0 14px;font-size:13px}
+
+#toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));
+  transform:translate(-50%,120%);z-index:9500;background:var(--ink);color:#fff;
+  padding:11px 18px;border-radius:9px;font-size:13.5px;box-shadow:var(--shadow-lg);
+  transition:transform .25s cubic-bezier(.2,.9,.3,1);max-width:92vw}
+#toast.on{transform:translate(-50%,0)}
+#toast.bad{background:var(--red)} #toast.good{background:var(--green)}
+
+.modal{position:fixed;inset:0;z-index:7000;display:none;align-items:center;justify-content:center;
+  padding:16px;background:rgba(8,20,38,.55)}
+.modal.on{display:flex}
+.modal .box{background:#fff;border-radius:13px;box-shadow:var(--shadow-lg);width:100%;
+  max-width:720px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+.modal .box.wide{max-width:980px}
+.modal .box.slim{max-width:460px}
+.modal .mh{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.modal .mh h2{flex:1}
+.modal .mb{padding:18px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal .mf{padding:13px 18px;border-top:1px solid var(--line);display:flex;gap:9px;
+  justify-content:flex-end;background:#fbfcfe;flex-wrap:wrap}
+.x{border:0;background:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;
+  padding:2px 6px;border-radius:6px}
+.x:hover{background:var(--grey-soft);color:var(--ink)}
+
+/* ---------- Wizard ---------------------------------------------- */
+.steps{display:flex;gap:7px;padding:14px 18px;background:#f8fafc;border-bottom:1px solid var(--line);
+  overflow-x:auto;-webkit-overflow-scrolling:touch}
+.step{flex:1;min-width:98px;border:1px solid var(--line);background:#fff;border-radius:9px;
+  padding:10px 8px;text-align:center;cursor:pointer;transition:.14s}
+.step .n{font-size:10.5px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase}
+.step .t{font-size:13px;font-weight:600;color:var(--ink);margin-top:2px}
+.step.on{background:var(--navy);border-color:var(--navy)}
+.step.on .t{color:#fff} .step.on .n{color:#8fa6c2}
+.step.done{border-color:var(--green)}
+.step.done .n{color:var(--green)}
+.wstep{display:none} .wstep.on{display:block}
+
+#sigpad{width:100%;height:190px;border:1px solid var(--line);border-radius:9px;
+  background:#fcfcf4;touch-action:none;display:block;cursor:crosshair}
+
+/* ---------- Misc ------------------------------------------------ */
+.searchbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+.searchbar .inp{flex:1;min-width:180px}
+.searchbar select.inp{max-width:172px;min-width:132px}
+.stack{display:flex;flex-direction:column;gap:11px}
+.between{display:flex;align-items:center;gap:11px;justify-content:space-between;flex-wrap:wrap}
+.muted{color:var(--muted)}
+.tiny{font-size:11.5px}
+.nowrap{white-space:nowrap}
+.listitem{padding:11px 16px;border-bottom:1px solid var(--line-2)}
+.listitem:last-child{border-bottom:0}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.matrix{border-collapse:collapse;font-size:11px;width:100%;min-width:480px}
+.matrix td,.matrix th{border:1px solid var(--line);padding:5px 4px;text-align:center}
+.matrix th{background:#f8fafc;font-weight:650;color:var(--muted)}
+.m-low{background:#e6f5ed;color:#0f8a52}
+.m-med{background:#fdf3e2;color:#b8760a}
+.m-high{background:#fde8d4;color:#c2540a}
+.m-ext{background:#fdecee;color:#c92a3c;font-weight:700}
+.bar{height:6px;border-radius:100px;background:var(--line-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--crimson);border-radius:100px}
+.divider{height:1px;background:var(--line-2);margin:16px 0}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:7px 14px;font-size:13.5px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;color:var(--ink)}
+@media (max-width:620px){.kv{grid-template-columns:1fr;gap:2px 0}.kv dd{margin-bottom:9px}}
+.offline{background:var(--amber-soft);color:var(--amber);padding:7px 20px;font-size:12.5px;
+  text-align:center;display:none}
+.offline.on{display:block}
+</style>
+</head>
+<body>
+
+<!-- ================= BOOT ================= -->
+<div id="boot">
+  <div class="mark">
+    <div style="font-size:26px;font-weight:800;letter-spacing:-.02em">EASTERN <span style="color:#DC143C">UAV</span></div>
+    <div style="font-size:11px;letter-spacing:.22em;color:#7f93ad;margin-top:5px">FLIGHT OPERATIONS CRM</div>
+    <div class="spin"></div>
+  </div>
+</div>
+
+<!-- ================= LOGIN ================= -->
+<div id="login" hidden>
+  <div class="hero">
+    <div class="badgeline">
+      <span class="pill-out">Kathmandu</span>
+      <span class="pill-out">Brisbane</span>
+    </div>
+    <div style="position:relative;z-index:1">
+      <h1>Flight operations, training and compliance in one place.</h1>
+      <p>Raise a job, run the risk assessment and JSA, sign it off, fly it, and log it — from the field, on your phone.</p>
+    </div>
+    <div style="position:relative;z-index:1">
+      <div style="font-size:19px;font-weight:800;letter-spacing:-.02em;color:#fff">EASTERN <span style="color:#DC143C">UAV</span></div>
+      <div class="dev">पूर्वी यूएभी · Remotely Piloted Aircraft</div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="inner">
+      <div style="margin-bottom:22px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div style="width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#DC143C,#B01030);display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px">EU</div>
+          <div>
+            <b style="display:block;font-size:15px;color:var(--ink)">Eastern UAV CRM</b>
+            <span style="font-size:11.5px;color:var(--muted)">Sign in to continue</span>
+          </div>
+        </div>
+        <h2 id="lg-title">Welcome back</h2>
+        <p class="muted" id="lg-sub" style="margin:4px 0 0;font-size:13px">Use the same login as the student portal.</p>
+      </div>
+
+      <form id="lg-form" autocomplete="on">
+        <div class="field" id="lg-name-f" hidden>
+          <label for="lg-name">Full name</label>
+          <input class="inp" id="lg-name" type="text" autocomplete="name" placeholder="Aashik Pokhrel">
+        </div>
+        <div class="field">
+          <label for="lg-email">Email</label>
+          <input class="inp" id="lg-email" type="email" autocomplete="username" required placeholder="you@easternuav.com">
+        </div>
+        <div class="field" id="lg-pass-f">
+          <label for="lg-pass">Password</label>
+          <input class="inp" id="lg-pass" type="password" autocomplete="current-password" required placeholder="••••••••">
+        </div>
+        <button class="btn pri wide" id="lg-go" type="submit" style="margin-top:4px">Sign in</button>
+        <p id="lg-msg" class="tiny" style="margin:11px 0 0;min-height:17px"></p>
+      </form>
+
+      <div class="divider"></div>
+      <div class="between tiny">
+        <button class="btn ghost sm" id="lg-toggle" type="button">Create an account</button>
+        <button class="btn ghost sm" id="lg-reset" type="button">Forgot password?</button>
+      </div>
+      <p class="tiny muted" style="margin-top:18px;line-height:1.55">
+        Eastern UAV is not a CAAN-approved training organisation. This system is for
+        internal operational and training records.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <div class="scrim" id="scrim"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">EU</div>
+      <div>
+        <b>Eastern UAV</b>
+        <span>Operations CRM</span>
+      </div>
+    </div>
+    <nav class="navwrap" id="nav"></nav>
+    <div class="sidefoot">
+      <div id="sf-base">—</div>
+      <div style="margin-top:3px;opacity:.7">easternuav.com/crm</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div class="ttl">
+        <h1 id="pg-title">Dashboard</h1>
+        <p id="pg-sub">Eastern UAV — Kathmandu</p>
+      </div>
+      <div class="spacer"></div>
+      <div class="clockbox">
+        <div><b id="clk-utc">--:--</b><span>UTC</span></div>
+        <div><b id="clk-loc">--:--</b><span id="clk-tz">Local</span></div>
+      </div>
+      <div class="who">
+        <div class="avatar" id="me-av">–</div>
+        <div class="nm">
+          <b id="me-name">—</b>
+          <span id="me-role">—</span>
+        </div>
+        <button class="btn ghost sm" id="signout" title="Sign out">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="offline" id="offbar">You are offline — showing the last loaded data. Changes will not save until you reconnect.</div>
+
+    <main class="content" id="content"></main>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div class="modal" id="modal"><div class="box" id="modalbox"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
