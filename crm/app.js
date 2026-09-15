@@ -558,6 +558,134 @@ route('dashboard', {
 });
 
 /* ---------------------------------------------------------------- */
+/* MAPS — job areas drawn on a chart                                 */
+/* ---------------------------------------------------------------- */
+/* Leaflet with Esri imagery rather than Google: no API key, no
+   billing account, and polygon drawing comes with Leaflet.draw.     */
+
+const AREA_TYPES = {
+  operations:        { label: 'Operations area',      color: '#16a34a', shape: 'polygon' },
+  takeoff_landing:   { label: 'Take-off & landing',   color: '#2563eb', shape: 'polygon' },
+  emergency_landing: { label: 'Emergency alternate',  color: '#eab308', shape: 'polygon' },
+  signage:           { label: 'Signage',              color: '#f97316', shape: 'circle'  },
+  command_centre:    { label: 'Command centre',       color: '#475569', shape: 'circle'  }
+};
+const typeInfo = t => AREA_TYPES[t] || AREA_TYPES.operations;
+
+const AIRSPACE_CLASSES = [
+  'Class A — Controlled',
+  'Class C — Controlled',
+  'Class D — Controlled',
+  'Class E — Controlled',
+  'Class G — Non Controlled Airspace',
+  'Restricted Area',
+  'Danger Area',
+  'Prohibited Area',
+  'Military Operating Area',
+  'CTAF — Certified / Registered aerodrome',
+  'Helicopter Landing Site',
+  'Aerodrome — 5.5 km / 3 NM zone'
+];
+
+let _leaflet = null;
+function loadLeaflet() {
+  if (_leaflet) return _leaflet;
+  _leaflet = new Promise((resolve, reject) => {
+    if (window.L && window.L.Draw) return resolve();
+    const addCss = href => {
+      if (document.querySelector(`link[href="${href}"]`)) return;
+      const l = document.createElement('link');
+      l.rel = 'stylesheet'; l.href = href; document.head.appendChild(l);
+    };
+    addCss('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css');
+    addCss('https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css');
+    const load = (src, next) => {
+      const s = document.createElement('script');
+      s.src = src; s.onload = next;
+      s.onerror = () => reject(new Error('Could not load the map library — check your connection.'));
+      document.head.appendChild(s);
+    };
+    load('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
+      () => load('https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js', resolve));
+  });
+  return _leaflet;
+}
+
+function basemaps() {
+  return {
+    Satellite: L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { maxZoom: 21, maxNativeZoom: 19,
+        attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics' }),
+    Map: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      { maxZoom: 20, maxNativeZoom: 19, attribution: '&copy; OpenStreetMap contributors' })
+  };
+}
+
+/* --- geometry <-> storage ---------------------------------------- */
+function featureFromLayer(layer) {
+  if (layer instanceof L.Circle) {
+    const c = layer.getLatLng();
+    return { type: 'Feature',
+             properties: { radius_m: Math.round(layer.getRadius()) },
+             geometry: { type: 'Point', coordinates: [c.lng, c.lat] } };
+  }
+  return layer.toGeoJSON();
+}
+
+function layerFromArea(a) {
+  const info = typeInfo(a.area_type);
+  const style = { color: info.color, weight: 2.5, fillColor: info.color, fillOpacity: 0.22 };
+  const g = a.geometry && a.geometry.geometry;
+  if (g && g.type === 'Polygon') {
+    const ring = g.coordinates[0].map(([lng, lat]) => [lat, lng]);
+    return L.polygon(ring, style);
+  }
+  if (g && g.type === 'Point') {
+    const [lng, lat] = g.coordinates;
+    const r = (a.geometry.properties && a.geometry.properties.radius_m) || a.radius_m || 25;
+    return L.circle([lat, lng], { radius: r, ...style });
+  }
+  if (a.lat != null && a.lng != null) {          // pre-map rows: a bare point
+    return L.circle([a.lat, a.lng], { radius: a.radius_m || 25, ...style });
+  }
+  return null;
+}
+
+/* Measurements taken from the layer itself, so they always agree with
+   what is drawn on screen. */
+function measureLayer(layer) {
+  if (layer instanceof L.Circle) {
+    const c = layer.getLatLng(), r = layer.getRadius();
+    return { lat: +c.lat.toFixed(7), lng: +c.lng.toFixed(7), radius_m: Math.round(r),
+             area_m2: +(Math.PI * r * r).toFixed(2), perimeter_m: +(2 * Math.PI * r).toFixed(2) };
+  }
+  const ring = layer.getLatLngs()[0] || [];
+  const area = L.GeometryUtil && L.GeometryUtil.geodesicArea
+    ? Math.abs(L.GeometryUtil.geodesicArea(ring)) : 0;
+  let per = 0;
+  for (let i = 0; i < ring.length; i++) per += ring[i].distanceTo(ring[(i + 1) % ring.length]);
+  const c = layer.getBounds().getCenter();
+  return { lat: +c.lat.toFixed(7), lng: +c.lng.toFixed(7), radius_m: null,
+           area_m2: +area.toFixed(2), perimeter_m: +per.toFixed(2) };
+}
+
+const fmtArea = m2 => !m2 ? '—'
+  : m2 >= 10000 ? (m2 / 1e6).toFixed(4) + ' km²' : Math.round(m2) + ' m²';
+
+/* Accepts "-27.335, 152.974" as well as a place name. */
+async function geocode(text) {
+  const pair = text.trim().match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+  if (pair) return { lat: Number(pair[1]), lng: Number(pair[2]), label: text.trim() };
+  const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='
+                        + encodeURIComponent(text));
+  if (!r.ok) throw new Error('Search is unavailable right now.');
+  const j = await r.json();
+  if (!j.length) throw new Error('Nothing found for that.');
+  return { lat: Number(j[0].lat), lng: Number(j[0].lon), label: j[0].display_name };
+}
+
+/* ---------------------------------------------------------------- */
 /* JOB MANAGER                                                       */
 /* ---------------------------------------------------------------- */
 route('jobs', {
@@ -776,13 +904,17 @@ async function jobDetail(c, id) {
           ${job.approved_at ? `<div class="divider"></div><dl class="kv"><dt>Approved by</dt><dd>${esc(nameOf(P, job.approved_by))}</dd><dt>Approved</dt><dd>${fmtDateTime(job.approved_at)}</dd></dl>` : ''}
         </div></div>
 
-        <div class="card"><div class="hd"><h3>Job areas</h3></div><div class="bd tight">
-          ${(areas || []).length ? (areas || []).map(a => `
-            <div class="listitem">
-              <b>${esc(a.label || a.area_type.replace(/_/g, ' '))}</b>
-              <div class="tiny muted mono">${a.lat ?? '—'}, ${a.lng ?? '—'} · up to ${esc(a.ceiling_ft || 400)} ft AGL</div>
+        <div class="card"><div class="hd"><h3>Job areas</h3>
+          ${(areas || []).length ? `<span class="tiny muted">${(areas || []).length} recorded</span>` : ''}</div>
+          ${(areas || []).length ? '<div id="detailmap" class="jobmap small" style="border:0;border-radius:0"></div>' : ''}
+          <div class="bd tight">
+          ${(areas || []).length ? (areas || []).map(a => {
+            const info = typeInfo(a.area_type);
+            return `<div class="listitem">
+              <b><i class="swatch" style="background:${info.color}"></i>${esc(a.label || info.label)}</b>
+              <div class="tiny muted mono">${a.lat ?? '—'}, ${a.lng ?? '—'} · up to ${esc(a.ceiling_ft || 400)} ft AGL${a.area_m2 ? ' · ' + fmtArea(a.area_m2) : ''}</div>
               ${a.airspace ? `<div class="tiny">Airspace: ${esc(a.airspace)}${a.radio_freq ? ' · ' + esc(a.radio_freq) : ''}</div>` : ''}
-            </div>`).join('') : '<div class="empty tiny">No areas recorded.</div>'}
+            </div>`; }).join('') : '<div class="empty tiny">No areas recorded.</div>'}
         </div></div>
 
         <div class="card"><div class="hd"><h3>Flight time</h3>
@@ -807,6 +939,32 @@ async function jobDetail(c, id) {
     </div>`;
 
   $('[data-print]') && ($('[data-print]').onclick = () => window.print());
+
+  /* Read-only map of the recorded areas. Best-effort: if the map
+     library cannot load, the coordinate list below it still stands. */
+  if ((areas || []).length && $('#detailmap')) {
+    loadLeaflet().then(() => {
+      const host = $('#detailmap'); if (!host) return;
+      const bases = basemaps();
+      const m = L.map(host, { layers: [bases.Satellite], zoomControl: true,
+                              scrollWheelZoom: false, attributionControl: true });
+      L.control.layers(bases, null, { position: 'topright' }).addTo(m);
+      const grp = L.featureGroup().addTo(m);
+      areas.forEach(a => {
+        const lyr = layerFromArea(a);
+        if (!lyr) return;
+        const info = typeInfo(a.area_type);
+        lyr.bindTooltip(a.label || info.label, { sticky: true });
+        grp.addLayer(lyr);
+      });
+      if (grp.getLayers().length) m.fitBounds(grp.getBounds().pad(0.3));
+      else m.setView([job.lat || 0, job.lng || 0], 15);
+      setTimeout(() => m.invalidateSize(), 150);
+    }).catch(() => {
+      const host = $('#detailmap');
+      if (host) host.innerHTML = '<div class="maploading">Map unavailable — coordinates are listed below.</div>';
+    });
+  }
 }
 
 /* ---- Create / edit job wizard ------------------------------------ */
@@ -933,15 +1091,79 @@ async function jobWizard(existingId) {
 
     else if (step === 1) {
       b.innerHTML = `
-        <p class="muted tiny" style="margin-top:0">Record each area you will use — operations area, take-off and landing,
-          the emergency alternate, signage positions and the command centre.</p>
-        <div id="arealist" class="stack"></div>
-        <button class="btn sm" type="button" data-addarea style="margin-top:10px">+ Add area</button>`;
-      paintAreas();
-      $('[data-addarea]').onclick = () => {
-        areas.push({ area_type: 'operations', label: '', lat: job.lat, lng: job.lng, ceiling_ft: job.max_height_ft || 400 });
-        paintAreas();
-      };
+        <p class="muted tiny" style="margin-top:0">Draw each area you will use. Pick a type, press
+          <b>Draw</b>, then click out the shape on the map — double-click or click the first point again to close it.</p>
+        <div class="searchbar" style="margin-bottom:10px">
+          <input class="inp" id="am-q" placeholder="Search a place, or paste  -27.335, 152.974">
+          <button class="btn" type="button" id="am-find">Find</button>
+          <button class="btn" type="button" id="am-here">Use my location</button>
+        </div>
+        <div class="typepick" id="am-types">
+          ${Object.entries(AREA_TYPES).map(([k, v], i) => `
+            <button type="button" class="tpick${i === 0 ? ' on' : ''}" data-type="${k}">
+              <i style="background:${v.color}"></i>${esc(v.label)}
+            </button>`).join('')}
+        </div>
+        <div class="between" style="margin:9px 0">
+          <div class="actions">
+            <button class="btn pri sm" type="button" id="am-draw">Draw</button>
+            <button class="btn sm" type="button" id="am-cancel" hidden>Cancel drawing</button>
+          </div>
+          <div class="actions">
+            <button class="btn sm" type="button" id="am-fit">Fit to areas</button>
+            <span class="tiny muted" id="am-hint"></span>
+          </div>
+        </div>
+        <div id="areamap" class="jobmap"></div>
+        <div id="arealist" class="stack" style="margin-top:13px"></div>
+
+        <div class="divider"></div>
+        <h4 style="margin-bottom:4px">Airspace &amp; radio frequencies</h4>
+        <p class="muted tiny" style="margin:0 0 10px">Which airspace this job sits in, and the frequencies
+          you will monitor. Tick the areas each one applies to.</p>
+
+        <div class="card" style="margin-bottom:12px"><div class="bd">
+          <div class="row c2" style="grid-template-columns:1fr auto;align-items:end">
+            <div class="field" style="margin:0"><label>Airspace</label>
+              <select class="inp" id="as-pick">
+                ${AIRSPACE_CLASSES.map(c => `<option>${esc(c)}</option>`).join('')}
+              </select></div>
+            <button class="btn sm" type="button" id="as-add">Add</button>
+          </div>
+          <div id="as-list" style="margin-top:11px"></div>
+        </div></div>
+
+        <div class="card" style="margin-bottom:12px"><div class="bd">
+          <div class="row c3" style="grid-template-columns:1.4fr 1fr auto;align-items:end">
+            <div class="field" style="margin:0"><label>Frequency name</label>
+              <input class="inp" id="fq-name" placeholder="BRISBANE CENTRE"></div>
+            <div class="field" style="margin:0"><label>Frequency</label>
+              <input class="inp" id="fq-val" placeholder="125.7"></div>
+            <button class="btn sm" type="button" id="fq-add">Add</button>
+          </div>
+          <div id="fq-list" style="margin-top:11px"></div>
+        </div></div>
+
+        <h4 style="margin-bottom:4px">Relevant NOTAMs</h4>
+        <p class="muted tiny" style="margin:0 0 10px">Entered by hand — there is no open NOTAM feed this app can
+          pull from. Check the official source and record anything that affects the job.
+          <a href="https://www.airservicesaustralia.com/naips/" target="_blank" rel="noopener">NAIPS (Australia)</a>.</p>
+        <div class="card"><div class="bd">
+          <div class="row c4" style="grid-template-columns:.8fr .9fr .9fr auto;align-items:end">
+            <div class="field" style="margin:0"><label>NOTAM ident</label>
+              <input class="inp" id="nt-id" placeholder="C1234/26"></div>
+            <div class="field" style="margin:0"><label>Valid from</label>
+              <input class="inp" type="datetime-local" id="nt-from"></div>
+            <div class="field" style="margin:0"><label>Valid to</label>
+              <input class="inp" type="datetime-local" id="nt-to"></div>
+            <button class="btn sm" type="button" id="nt-add">Add</button>
+          </div>
+          <div class="field" style="margin-top:11px;margin-bottom:0"><label>Text</label>
+            <textarea class="inp" id="nt-text" style="min-height:62px" placeholder="Paste the NOTAM text."></textarea></div>
+          <div id="nt-list" style="margin-top:11px"></div>
+        </div></div>`;
+      initAreaMap();
+      initAirspacePanels();
     }
 
     else if (step === 2) {
@@ -1072,20 +1294,249 @@ async function jobWizard(existingId) {
     };
   }
 
+  /* ---- map state, scoped to this wizard ------------------------ */
+  let amap = null, drawn = null, drawHandler = null, pickType = 'operations';
+
+  async function initAreaMap() {
+    const host = $('#areamap');
+    if (!host) return;
+    host.innerHTML = '<div class="maploading">Loading map…</div>';
+    try { await loadLeaflet(); }
+    catch (err) { host.innerHTML = `<div class="maploading">${esc(err.message)}</div>`; paintAreas(); return; }
+    host.innerHTML = '';
+
+    const bases = basemaps();
+    const seed = areas.find(a => a.lat != null)
+      || (job.lat != null ? { lat: Number(job.lat), lng: Number(job.lng) } : null)
+      || (BASES[S.me.base] || BASES.Kathmandu);
+
+    amap = L.map(host, { center: [seed.lat, seed.lng], zoom: 17, layers: [bases.Satellite] });
+    L.control.layers(bases, null, { position: 'topright' }).addTo(amap);
+    L.control.scale({ imperial: false }).addTo(amap);
+
+    drawn = L.featureGroup().addTo(amap);
+    areas.forEach(a => {
+      const lyr = layerFromArea(a);
+      if (!lyr) return;
+      a._layer = lyr; lyr._areaRef = a;
+      drawn.addLayer(lyr); bindLayer(a, lyr);
+    });
+
+    /* Edit and delete come from Leaflet.draw; drawing is driven by the
+       type buttons instead, so the shape always matches the type. */
+    amap.addControl(new L.Control.Draw({
+      position: 'topleft', draw: false,
+      edit: { featureGroup: drawn, remove: true }
+    }));
+
+    amap.on(L.Draw.Event.CREATED, e => {
+      const info = typeInfo(pickType);
+      if (e.layer.setStyle) e.layer.setStyle({ color: info.color, fillColor: info.color, fillOpacity: .22, weight: 2.5 });
+      const a = { area_type: pickType, label: info.label, ceiling_ft: job.max_height_ft || 400 };
+      Object.assign(a, measureLayer(e.layer));
+      a.geometry = featureFromLayer(e.layer);
+      a._layer = e.layer; e.layer._areaRef = a;
+      areas.push(a);
+      drawn.addLayer(e.layer); bindLayer(a, e.layer);
+      if (job.lat == null) { job.lat = a.lat; job.lng = a.lng; }
+      endDraw(); paintAreas();
+    });
+    amap.on(L.Draw.Event.EDITED, e => {
+      e.layers.eachLayer(l => { if (l._areaRef) syncLayer(l._areaRef, l); });
+      paintAreas();
+    });
+    amap.on(L.Draw.Event.DELETED, e => {
+      e.layers.eachLayer(l => { const i = areas.indexOf(l._areaRef); if (i > -1) areas.splice(i, 1); });
+      paintAreas();
+    });
+
+    /* The modal animates in, so the map has to be told its real size. */
+    setTimeout(() => { amap.invalidateSize(); fitAreas(); }, 150);
+    paintAreas();
+
+    $('#am-types').onclick = ev => {
+      const btn = ev.target.closest('[data-type]'); if (!btn) return;
+      pickType = btn.dataset.type;
+      $$('#am-types .tpick').forEach(x => x.classList.toggle('on', x === btn));
+      if (drawHandler) { endDraw(); startDraw(); }
+    };
+    $('#am-draw').onclick   = startDraw;
+    $('#am-cancel').onclick = endDraw;
+    $('#am-fit').onclick    = fitAreas;
+    $('#am-find').onclick   = doFind;
+    $('#am-q').onkeydown = ev => { if (ev.key === 'Enter') { ev.preventDefault(); doFind(); } };
+    $('#am-here').onclick = () => {
+      if (!navigator.geolocation) return toast('This browser will not share a location', 'bad');
+      navigator.geolocation.getCurrentPosition(
+        pos => amap.setView([pos.coords.latitude, pos.coords.longitude], 18),
+        ()  => toast('Could not get your location', 'bad'),
+        { enableHighAccuracy: true, timeout: 8000 });
+    };
+  }
+
+  function startDraw() {
+    if (!amap) return;
+    endDraw();
+    const info = typeInfo(pickType);
+    const shapeOptions = { color: info.color, fillColor: info.color, fillOpacity: .22, weight: 2.5 };
+    drawHandler = info.shape === 'circle'
+      ? new L.Draw.Circle(amap, { shapeOptions })
+      : new L.Draw.Polygon(amap, { shapeOptions, allowIntersection: false, showArea: true });
+    drawHandler.enable();
+    const d = $('#am-draw'), c = $('#am-cancel'), h = $('#am-hint');
+    if (d) d.hidden = true; if (c) c.hidden = false;
+    if (h) h.textContent = info.shape === 'circle'
+      ? 'Click the centre, then drag out the radius.'
+      : 'Click each corner; click the first point again to close.';
+  }
+
+  function endDraw() {
+    if (drawHandler) { try { drawHandler.disable(); } catch (err) {} drawHandler = null; }
+    const d = $('#am-draw'), c = $('#am-cancel'), h = $('#am-hint');
+    if (d) d.hidden = false; if (c) c.hidden = true; if (h) h.textContent = '';
+  }
+
+  function syncLayer(a, lyr) {
+    Object.assign(a, measureLayer(lyr));
+    a.geometry = featureFromLayer(lyr);
+  }
+
+  function bindLayer(a, lyr) {
+    lyr.bindTooltip(() => {
+      const info = typeInfo(a.area_type);
+      return a.label && a.label !== info.label ? info.label + ' — ' + a.label : info.label;
+    }, { sticky: true });
+    lyr.on('click', () => {
+      const card = $(`[data-areacard="${areas.indexOf(a)}"]`);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  function fitAreas() {
+    if (!amap || !drawn || !drawn.getLayers().length) return;
+    amap.fitBounds(drawn.getBounds().pad(0.25));
+  }
+
+  async function doFind() {
+    const q = $('#am-q').value.trim(); if (!q || !amap) return;
+    const btn = $('#am-find'); btn.disabled = true;
+    try {
+      const r = await geocode(q);
+      amap.setView([r.lat, r.lng], 17);
+      if (!job.location_name) job.location_name = r.label;
+    } catch (err) { toast(err.message, 'bad'); }
+    finally { btn.disabled = false; }
+  }
+
+  /* ---- airspace / frequencies / NOTAMs ------------------------- */
+  function areaTicks(list, idx, kind) {
+    const used = Object.keys(AREA_TYPES).filter(t => areas.some(a => a.area_type === t));
+    const opts = used.length ? used : Object.keys(AREA_TYPES);
+    return opts.map(t => `<label class="chk" style="display:inline-flex;margin-right:13px">
+        <input type="checkbox" data-tick="${kind}" data-i="${idx}" data-area="${t}"
+          ${(list.areas || []).includes(t) ? 'checked' : ''}>
+        <span class="tiny"><i class="swatch" style="background:${typeInfo(t).color}"></i>${esc(typeInfo(t).label)}</span>
+      </label>`).join('');
+  }
+
+  function paintAirspace() {
+    const el = $('#as-list'); if (!el) return;
+    const rows = job.airspace || [];
+    el.innerHTML = rows.length ? rows.map((r, i) => `
+      <div class="listitem" style="padding-left:0;padding-right:0">
+        <div class="between"><b>${esc(r.class)}</b>
+          <button class="btn ghost sm" data-delas="${i}">Remove</button></div>
+        <div style="margin-top:5px">${areaTicks(r, i, 'as')}</div>
+      </div>`).join('') : '<p class="muted tiny" style="margin:0">None recorded.</p>';
+  }
+
+  function paintFreqs() {
+    const el = $('#fq-list'); if (!el) return;
+    const rows = job.frequencies || [];
+    el.innerHTML = rows.length ? rows.map((r, i) => `
+      <div class="listitem" style="padding-left:0;padding-right:0">
+        <div class="between"><b>${esc(r.name)} <span class="mono muted">${esc(r.freq)}</span></b>
+          <button class="btn ghost sm" data-delfq="${i}">Remove</button></div>
+        <div style="margin-top:5px">${areaTicks(r, i, 'fq')}</div>
+      </div>`).join('') : '<p class="muted tiny" style="margin:0">None recorded.</p>';
+  }
+
+  function paintNotams() {
+    const el = $('#nt-list'); if (!el) return;
+    const rows = job.notams || [];
+    el.innerHTML = rows.length ? rows.map((r, i) => `
+      <div class="listitem" style="padding-left:0;padding-right:0">
+        <div class="between"><b class="mono">${esc(r.ident || 'NOTAM')}</b>
+          <button class="btn ghost sm" data-delnt="${i}">Remove</button></div>
+        ${r.valid_from || r.valid_to ? `<div class="tiny muted">${fmtDateTime(r.valid_from)} → ${fmtDateTime(r.valid_to)}</div>` : ''}
+        ${r.text ? `<div class="tiny mono" style="margin-top:4px;white-space:pre-wrap">${esc(r.text)}</div>` : ''}
+      </div>`).join('') : '<p class="muted tiny" style="margin:0">None recorded.</p>';
+  }
+
+  function initAirspacePanels() {
+    job.airspace    = job.airspace    || [];
+    job.frequencies = job.frequencies || [];
+    job.notams      = job.notams      || [];
+    paintAirspace(); paintFreqs(); paintNotams();
+
+    $('#as-add').onclick = () => {
+      const v = $('#as-pick').value;
+      if ((job.airspace || []).some(r => r.class === v)) return toast('Already listed', 'bad');
+      job.airspace.push({ class: v, areas: [] }); paintAirspace();
+    };
+    $('#fq-add').onclick = () => {
+      const name = $('#fq-name').value.trim(), freq = $('#fq-val').value.trim();
+      if (!name || !freq) return toast('Name and frequency are both needed', 'bad');
+      job.frequencies.push({ name, freq, areas: [] });
+      $('#fq-name').value = ''; $('#fq-val').value = ''; paintFreqs();
+    };
+    $('#nt-add').onclick = () => {
+      const ident = $('#nt-id').value.trim(), text = $('#nt-text').value.trim();
+      if (!ident && !text) return toast('Add an ident or some text', 'bad');
+      job.notams.push({ ident, text,
+        valid_from: $('#nt-from').value || null, valid_to: $('#nt-to').value || null });
+      $('#nt-id').value = ''; $('#nt-text').value = '';
+      $('#nt-from').value = ''; $('#nt-to').value = '';
+      paintNotams();
+    };
+
+    const body = $('#wbody');
+    body.addEventListener('click', ev => {
+      const a = ev.target.dataset.delas, f = ev.target.dataset.delfq, n = ev.target.dataset.delnt;
+      if (a !== undefined) { job.airspace.splice(a, 1); paintAirspace(); }
+      if (f !== undefined) { job.frequencies.splice(f, 1); paintFreqs(); }
+      if (n !== undefined) { job.notams.splice(n, 1); paintNotams(); }
+    });
+    body.addEventListener('change', ev => {
+      const kind = ev.target.dataset.tick;
+      if (!kind) return;
+      const i = ev.target.dataset.i, t = ev.target.dataset.area;
+      const row = (kind === 'as' ? job.airspace : job.frequencies)[i];
+      row.areas = row.areas || [];
+      if (ev.target.checked) { if (!row.areas.includes(t)) row.areas.push(t); }
+      else row.areas = row.areas.filter(x => x !== t);
+    });
+  }
+
   function paintAreas() {
     const el = $('#arealist'); if (!el) return;
-    el.innerHTML = areas.length ? areas.map((a, i) => `
-      <div class="card"><div class="bd">
+    el.innerHTML = areas.length ? areas.map((a, i) => {
+      const info = typeInfo(a.area_type);
+      return `
+      <div class="card" data-areacard="${i}"><div class="bd">
         <div class="between" style="margin-bottom:9px">
-          <b>Area ${i + 1}</b><button class="btn ghost sm" data-delarea="${i}">Remove</button>
+          <b><i class="swatch" style="background:${info.color}"></i>${esc(info.label)}</b>
+          <div class="actions">
+            <span class="pill grey">${fmtArea(a.area_m2)}</span>
+            <button class="btn ghost sm" data-zoomarea="${i}">Zoom</button>
+            <button class="btn ghost sm" data-delarea="${i}">Remove</button>
+          </div>
         </div>
         <div class="row c3">
           <div class="field"><label>Type</label>
             <select class="inp" data-af="area_type" data-i="${i}">
-              ${[['operations', 'Operations area'], ['takeoff_landing', 'Take-off & landing'],
-                 ['emergency_landing', 'Emergency alternate'], ['signage', 'Signage'],
-                 ['command_centre', 'Command centre']].map(([v, l]) =>
-                `<option value="${v}"${a.area_type === v ? ' selected' : ''}>${l}</option>`).join('')}
+              ${Object.entries(AREA_TYPES).map(([v, o]) =>
+                `<option value="${v}"${a.area_type === v ? ' selected' : ''}>${esc(o.label)}</option>`).join('')}
             </select></div>
           <div class="field"><label>Label</label>
             <input class="inp" data-af="label" data-i="${i}" value="${esc(a.label || '')}"></div>
@@ -1093,24 +1544,42 @@ async function jobWizard(existingId) {
             <input class="inp" type="number" data-af="ceiling_ft" data-i="${i}" value="${esc(a.ceiling_ft ?? 400)}"></div>
         </div>
         <div class="row c4">
-          <div class="field"><label>Latitude</label>
-            <input class="inp" type="number" step="0.0000001" data-af="lat" data-i="${i}" value="${esc(a.lat ?? '')}"></div>
-          <div class="field"><label>Longitude</label>
-            <input class="inp" type="number" step="0.0000001" data-af="lng" data-i="${i}" value="${esc(a.lng ?? '')}"></div>
           <div class="field"><label>Airspace</label>
             <input class="inp" data-af="airspace" data-i="${i}" value="${esc(a.airspace || '')}" placeholder="Class G"></div>
           <div class="field"><label>Radio frequency</label>
             <input class="inp" data-af="radio_freq" data-i="${i}" value="${esc(a.radio_freq || '')}" placeholder="126.7"></div>
+          <div class="field"><label>Centre</label>
+            <input class="inp mono" readonly value="${a.lat != null ? a.lat + ', ' + a.lng : ''}"></div>
+          <div class="field"><label>${a.radius_m ? 'Radius' : 'Perimeter'}</label>
+            <input class="inp" readonly value="${a.radius_m ? a.radius_m + ' m'
+              : (a.perimeter_m ? Math.round(a.perimeter_m) + ' m' : '—')}"></div>
         </div>
-      </div></div>`).join('') : '<p class="muted tiny" style="margin:0">No areas yet.</p>';
-    el.onchange = el.oninput = e => {
-      const f = e.target.dataset.af, i = e.target.dataset.i;
+      </div></div>`;
+    }).join('')
+      : '<p class="muted tiny" style="margin:0">No areas yet — pick a type above and press Draw.</p>';
+
+    el.onchange = el.oninput = ev => {
+      const f = ev.target.dataset.af, i = ev.target.dataset.i;
       if (f === undefined || i === undefined) return;
-      areas[i][f] = e.target.type === 'number' ? (e.target.value === '' ? null : Number(e.target.value)) : e.target.value;
+      areas[i][f] = ev.target.type === 'number'
+        ? (ev.target.value === '' ? null : Number(ev.target.value)) : ev.target.value;
+      if (f === 'area_type' && areas[i]._layer && areas[i]._layer.setStyle) {
+        const c = typeInfo(areas[i].area_type).color;
+        areas[i]._layer.setStyle({ color: c, fillColor: c });
+        paintAreas();
+      }
     };
-    el.onclick = e => {
-      const i = e.target.dataset.delarea; if (i === undefined) return;
-      areas.splice(i, 1); paintAreas();
+    el.onclick = ev => {
+      const d = ev.target.dataset.delarea, z = ev.target.dataset.zoomarea;
+      if (d !== undefined) {
+        if (areas[d]._layer && drawn) drawn.removeLayer(areas[d]._layer);
+        areas.splice(d, 1); paintAreas(); return;
+      }
+      if (z !== undefined && amap && areas[z]._layer) {
+        const l = areas[z]._layer;
+        amap.fitBounds(l.getBounds ? l.getBounds().pad(0.4)
+                                   : l.getLatLng().toBounds(200));
+      }
     };
   }
 
@@ -1163,7 +1632,10 @@ async function jobWizard(existingId) {
       maps_checked: !!job.maps_checked, ext_risk_done: !!job.ext_risk_done,
       casa_approval: job.casa_approval || 'Not Required',
       risk_assessment_id: job.risk_assessment_id || null,
-      attachments: job.attachments || []
+      attachments: job.attachments || [],
+      airspace: job.airspace || [], frequencies: job.frequencies || [], notams: job.notams || [],
+      total_area_m2: areas.filter(a => a.area_type === 'operations')
+                          .reduce((t, a) => t + (Number(a.area_m2) || 0), 0) || null
     };
     if (sig) { payload.signature = sig; payload.signed_by = S.me.id; payload.signed_at = new Date().toISOString(); }
 
@@ -1198,7 +1670,9 @@ async function jobWizard(existingId) {
     if (areas.length) await sb.from('crm_job_areas').insert(areas.map(a => ({
       job_id: id, area_type: a.area_type, label: a.label || null,
       lat: a.lat ?? null, lng: a.lng ?? null, ceiling_ft: a.ceiling_ft ?? 400,
-      airspace: a.airspace || null, radio_freq: a.radio_freq || null
+      airspace: a.airspace || null, radio_freq: a.radio_freq || null,
+      radius_m: a.radius_m ?? null, geometry: a.geometry ?? null,
+      area_m2: a.area_m2 ?? null, perimeter_m: a.perimeter_m ?? null
     })));
 
     toast(close ? 'Job saved' : 'Saved', 'good');
