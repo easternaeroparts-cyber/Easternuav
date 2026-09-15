@@ -28,6 +28,7 @@ const BASES = {
 };
 
 const S = {
+  booted: false,       // start() has settled; auth events are safe to act on
   session: null,
   me: null,            // crm_people row
   route: 'dashboard',
@@ -289,7 +290,14 @@ function wireLogin() {
 async function loadMe() {
   const uid = S.session.user.id;
   let { data, error } = await sb.from('crm_people').select('*').eq('id', uid).maybeSingle();
-  if (error) { console.error(error); }
+  if (error) {
+    console.error('crm_people select', error);
+    /* A missing table is the common case and deserves plain words. */
+    if (/relation .* does not exist|schema cache/i.test(error.message || '')) {
+      throw new Error('The CRM tables are not in the database yet. Run CRM-SCHEMA.sql in the Supabase SQL editor, then reload.');
+    }
+    throw new Error(error.message);
+  }
   if (!data) {
     /* The database trigger normally makes this row. If the user
        predates the trigger, make it now. */
@@ -298,6 +306,10 @@ async function loadMe() {
       full_name: S.session.user.user_metadata?.full_name || S.session.user.email.split('@')[0],
       email: S.session.user.email
     }).select().maybeSingle();
+    if (ins.error) {
+      console.error('crm_people insert', ins.error);
+      throw new Error('Signed in, but no CRM record exists for this account and one could not be created: ' + ins.error.message);
+    }
     data = ins.data;
   }
   S.me = data;
@@ -2520,22 +2532,66 @@ window.addEventListener('hashchange', () => {
 window.addEventListener('online',  () => $('#offbar').classList.remove('on'));
 window.addEventListener('offline', () => $('#offbar').classList.add('on'));
 
+/* The boot screen must never be a dead end. Anything that goes wrong
+   during start-up gets shown here with a way out, rather than leaving
+   the spinner turning forever. */
+function bootFail(title, detail, showLogin) {
+  const b = $('#boot');
+  if (!b || b.hidden) return;
+  b.innerHTML = `<div class="mark" style="max-width:360px;padding:0 20px">
+    <div style="font-size:22px;font-weight:800;letter-spacing:-.02em">EASTERN <span style="color:#DC143C">UAV</span></div>
+    <b style="display:block;margin-top:18px;font-size:15px">${esc(title)}</b>
+    <p style="color:#8fa6c2;font-size:13px;line-height:1.55;margin:8px 0 16px">${esc(detail)}</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn" id="bf-reload">Reload</button>
+      ${showLogin ? '<button class="btn" id="bf-signout">Sign in again</button>' : ''}
+    </div></div>`;
+  S.booted = true;
+  const r = $('#bf-reload'); if (r) r.onclick = () => location.reload();
+  const s = $('#bf-signout');
+  if (s) s.onclick = async () => {
+    try { await sb.auth.signOut(); } catch (e) {}
+    try { Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+    location.reload();
+  };
+}
+
+/* If nothing has resolved after 20 seconds, something is wrong that we
+   are not being told about — a paused project waking up, or no network. */
+const bootWatchdog = setTimeout(() => {
+  bootFail('This is taking longer than it should',
+           'The database may be waking up from idle, or the connection dropped. Reload to try again.',
+           true);
+}, 20000);
+
 async function start() {
-  const { data } = await sb.auth.getSession();
-  S.session = data.session;
+  let data;
+  try {
+    ({ data } = await sb.auth.getSession());
+  } catch (err) {
+    clearTimeout(bootWatchdog);
+    return bootFail('Could not reach the sign-in service',
+                    (err && err.message) || 'Check your connection and reload.', true);
+  }
+  S.session = data && data.session;
   if (!S.session) {
+    clearTimeout(bootWatchdog);
     $('#boot').hidden = true;
     $('#login').hidden = false;
     paintLogin();
+    S.booted = true;
     return;
   }
-  await loadMe();
+
+  let meErr = null;
+  try { await loadMe(); } catch (err) { meErr = err; }
+  clearTimeout(bootWatchdog);
+
   if (!S.me) {
-    $('#boot').innerHTML = `<div class="mark"><b>Could not load your profile.</b>
-      <p style="color:#8fa6c2;font-size:13px;max-width:34ch;margin:8px auto 14px">
-      Run CRM-SCHEMA.sql in Supabase, then reload.</p>
-      <button class="btn" onclick="location.reload()">Reload</button></div>`;
-    return;
+    return bootFail('Could not load your profile',
+      meErr ? (meErr.message || String(meErr))
+            : 'Your account exists but has no record in the CRM. Run CRM-SCHEMA.sql in Supabase, then reload.',
+      true);
   }
   buildNav();
   paintMe();
@@ -2545,17 +2601,27 @@ async function start() {
   $('#boot').hidden = true;
   $('#app').classList.add('on');
   if (!navigator.onLine) $('#offbar').classList.add('on');
+  S.booted = true;
   const [k, p] = location.hash.slice(1).split('/');
   go(k && ROUTES[k] ? k : 'dashboard', p);
 }
 
+/* Do not touch the page until the first start() has settled.
+   supabase-js replays INITIAL_SESSION and SIGNED_IN for a session it
+   restored from storage, so reloading on those sends the page into an
+   endless reload loop: restore -> SIGNED_IN -> reload -> restore ...
+   Once booted, a SIGNED_IN can only mean a real new sign-in. */
 sb.auth.onAuthStateChange((event) => {
+  if (!S.booted) return;
+  if (event === 'SIGNED_OUT') { location.reload(); return; }
   if (event === 'SIGNED_IN' && !S.me) location.reload();
-  if (event === 'SIGNED_OUT') location.reload();
 });
 
 wireLogin();
-start();
+start().catch(err => {
+  clearTimeout(bootWatchdog);
+  bootFail('Something went wrong starting up', (err && err.message) || String(err), true);
+});
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
