@@ -368,6 +368,24 @@ table.tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
 .offline{background:var(--amber-soft);color:var(--amber);padding:7px 20px;font-size:12.5px;
   text-align:center;display:none}
 .offline.on{display:block}
+
+/* ---------- Job area map ---------------------------------------- */
+.jobmap{height:430px;width:100%;border:1px solid var(--line);border-radius:var(--rad);
+  background:#e8eef3;overflow:hidden;z-index:0}
+.jobmap.small{height:300px}
+.maploading{height:100%;display:grid;place-items:center;color:var(--muted);font-size:13px;padding:20px;text-align:center}
+.typepick{display:flex;gap:7px;flex-wrap:wrap}
+.tpick{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;
+  border-radius:100px;padding:6px 13px;font-size:12.5px;cursor:pointer;color:var(--body);transition:.13s}
+.tpick:hover{background:var(--grey-soft)}
+.tpick.on{border-color:var(--navy);background:var(--navy);color:#fff;font-weight:600}
+.tpick i{width:11px;height:11px;border-radius:3px;flex:0 0 11px;display:block}
+.swatch{width:11px;height:11px;border-radius:3px;display:inline-block;margin-right:7px;vertical-align:-1px}
+/* Leaflet paints its own controls; keep the app's chrome above them. */
+.leaflet-container{font:inherit}
+.leaflet-top,.leaflet-bottom{z-index:400}
+.leaflet-draw-toolbar a{background-color:#fff}
+@media (max-width:760px){.jobmap{height:340px}}
 </style>
 </head>
 <body>
