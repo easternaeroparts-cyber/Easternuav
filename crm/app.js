@@ -685,6 +685,146 @@ async function geocode(text) {
   return { lat: Number(j[0].lat), lng: Number(j[0].lon), label: j[0].display_name };
 }
 
+
+/* ---------------------------------------------------------------- */
+/* NEPAL AIRSPACE — read from the Udaan map at /map/                 */
+/* ---------------------------------------------------------------- */
+/* Deliberately read at runtime rather than copied into this app.
+   Airspace is the one thing that must not go stale: a duplicated
+   copy of the restricted areas would quietly drift out of step with
+   /map/ and nobody would notice until it mattered. Same origin, so
+   no CORS; cached for a day; if the shape of that file ever changes
+   the overlay simply does not appear. */
+
+const AIRSPACE_STYLES = {
+  ctr:        { color: '#d946ef', label: 'Control zones (CTR)' },
+  atz:        { color: '#f59e0b', label: 'Aerodrome traffic zones (ATZ)' },
+  tma:        { color: '#8b5cf6', label: 'Terminal areas (TMA)' },
+  restricted: { color: '#dc2626', label: 'Restricted areas' },
+  firing:     { color: '#991b1b', label: 'Firing areas' }
+};
+
+let _airspace = null;
+function nepalAirspace() {
+  if (_airspace) return _airspace;
+  _airspace = (async () => {
+    try {
+      const c = JSON.parse(localStorage.getItem('euav_airspace_np') || 'null');
+      if (c && c.v === 2 && Date.now() - c.t < 864e5) return c.d;
+    } catch (e) {}
+    const res = await fetch('/map/', { cache: 'no-cache' });
+    if (!res.ok) throw new Error('Could not read the airspace data from /map/');
+    const data = parseUdaanAirspace(await res.text());
+    try { localStorage.setItem('euav_airspace_np', JSON.stringify({ v: 2, t: Date.now(), d: data })); } catch (e) {}
+    return data;
+  })();
+  return _airspace;
+}
+
+/* Pulls the zone tables out of the Udaan page. They are plain data
+   literals, so they are read as data and never as instructions. */
+function parseUdaanAirspace(src) {
+  const literal = (name, open) => {
+    const close = open === '{' ? '}' : ']';
+    const at = src.search(new RegExp('const\\s+' + name + '\\s*=\\s*\\' + open));
+    if (at < 0) return null;
+    const s = src.indexOf(open, at);
+    let depth = 0, quote = null, esc = false;
+    for (let j = s; j < src.length; j++) {
+      const c = src[j];
+      if (quote) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === quote) quote = null; continue; }
+      if (c === '"' || c === "'" || c === '`') { quote = c; continue; }
+      if (c === open) depth++;
+      else if (c === close) { depth--; if (!depth) return src.slice(s, j + 1); }
+    }
+    return null;
+  };
+  const read = txt => { try { return txt ? Function('"use strict";return (' + txt + ');')() : null; } catch (e) { return null; } };
+
+  const E = read(literal('ENR61', '{')) || {};
+  const R = read(literal('RESTRICTED', '[')) || [];
+  const F = read(literal('FIRING', '[')) || [];
+  const rwy = E.rwy || {};
+
+  const zones = [];
+  (E.ctr || []).forEach(z => zones.push({
+    kind: 'ctr', name: z.name, ring: z.ring,
+    detail: [z.top, z.unit, z.note].filter(Boolean).join(' · ') }));
+  (E.atz || []).forEach(z => {
+    const r = rwy[z.id] || {};
+    zones.push({ kind: 'atz', name: (z.id || 'ATZ') + ' aerodrome traffic zone', ring: z.ring,
+                 detail: [r.d ? 'RWY ' + r.d : null, r.e ? r.e + ' ft elev' : null, r.f].filter(Boolean).join(' · ') });
+  });
+  (E.tma || []).forEach(z => zones.push({
+    kind: 'tma', name: z.name, ring: z.ring,
+    detail: [z.base, z.top].filter(Boolean).join(' – ') }));
+  R.forEach(z => zones.push({ kind: 'restricted', name: z.name, ring: z.ring, detail: z.detail }));
+
+  const circles = F.map(f => ({ kind: 'firing', name: f[1], lat: f[2], lng: f[3], radius_m: f[4] || 2000,
+                                detail: 'Firing area ' + f[0] }));
+  return { zones, circles };
+}
+
+/* Ray casting. Rings are [lng, lat], matching GeoJSON. */
+function pointInRing(lng, lat, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    if (((yi > lat) !== (yj > lat)) && (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi)) inside = !inside;
+  }
+  return inside;
+}
+
+const haversine = (aLat, aLng, bLat, bLng) => {
+  const R = 6371000, r = Math.PI / 180;
+  const dLat = (bLat - aLat) * r, dLng = (bLng - aLng) * r;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(aLat * r) * Math.cos(bLat * r) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+};
+
+/* Which zones does this area touch? Tests every vertex plus the
+   centre, so an area that merely clips a boundary still reports. */
+function airspaceHits(area, air) {
+  if (!air) return [];
+  const pts = [];
+  const g = area.geometry && area.geometry.geometry;
+  if (g && g.type === 'Polygon') g.coordinates[0].forEach(([lng, lat]) => pts.push([lng, lat]));
+  if (area.lng != null) pts.push([Number(area.lng), Number(area.lat)]);
+  if (!pts.length) return [];
+
+  const hits = [];
+  air.zones.forEach(z => {
+    if (!z.ring || !z.ring.length) return;
+    if (pts.some(([lng, lat]) => pointInRing(lng, lat, z.ring))) hits.push(z);
+  });
+  air.circles.forEach(c => {
+    if (pts.some(([lng, lat]) => haversine(lat, lng, c.lat, c.lng) <= c.radius_m)) hits.push(c);
+  });
+  return hits;
+}
+
+/* Builds the overlay layers for the Leaflet layers control. */
+function airspaceOverlays(air) {
+  const out = {};
+  Object.entries(AIRSPACE_STYLES).forEach(([kind, st]) => {
+    const grp = L.layerGroup();
+    air.zones.filter(z => z.kind === kind).forEach(z => {
+      L.polygon(z.ring.map(([lng, lat]) => [lat, lng]), {
+        color: st.color, weight: 1.6, fillColor: st.color, fillOpacity: kind === 'restricted' ? 0.3 : 0.08,
+        dashArray: kind === 'tma' ? '6,5' : null, interactive: true
+      }).bindTooltip(`<b>${esc(z.name)}</b>${z.detail ? '<br>' + esc(z.detail) : ''}`,
+                     { sticky: true }).addTo(grp);
+    });
+    if (kind === 'firing') air.circles.forEach(c => {
+      L.circle([c.lat, c.lng], { radius: c.radius_m, color: st.color, weight: 1.6,
+        fillColor: st.color, fillOpacity: 0.16 })
+        .bindTooltip(`<b>${esc(c.name)}</b><br>${esc(c.detail)}`, { sticky: true }).addTo(grp);
+    });
+    if (grp.getLayers().length) out[st.label] = grp;
+  });
+  return out;
+}
+
 /* ---------------------------------------------------------------- */
 /* JOB MANAGER                                                       */
 /* ---------------------------------------------------------------- */
@@ -960,6 +1100,11 @@ async function jobDetail(c, id) {
       if (grp.getLayers().length) m.fitBounds(grp.getBounds().pad(0.3));
       else m.setView([job.lat || 0, job.lng || 0], 15);
       setTimeout(() => m.invalidateSize(), 150);
+      nepalAirspace().then(air => {
+        const ov = airspaceOverlays(air);
+        const ctl = L.control.layers(null, ov, { position: 'topright', collapsed: true }).addTo(m);
+        Object.entries(ov).forEach(([label, g]) => { if (/Restricted|Control zones/.test(label)) g.addTo(m); });
+      }).catch(() => {});
     }).catch(() => {
       const host = $('#detailmap');
       if (host) host.innerHTML = '<div class="maploading">Map unavailable — coordinates are listed below.</div>';
@@ -1114,6 +1259,7 @@ async function jobWizard(existingId) {
             <span class="tiny muted" id="am-hint"></span>
           </div>
         </div>
+        <div id="am-warn" class="airwarn" hidden></div>
         <div id="areamap" class="jobmap" style="height:430px;min-height:280px"></div>
         <div id="arealist" class="stack" style="margin-top:13px"></div>
 
@@ -1296,6 +1442,7 @@ async function jobWizard(existingId) {
 
   /* ---- map state, scoped to this wizard ------------------------ */
   let amap = null, drawn = null, drawHandler = null, pickType = 'operations';
+  let layerCtl = null, airData = null;
 
   async function initAreaMap() {
     const host = $('#areamap');
@@ -1311,7 +1458,7 @@ async function jobWizard(existingId) {
       || (BASES[S.me.base] || BASES.Kathmandu);
 
     amap = L.map(host, { center: [seed.lat, seed.lng], zoom: 17, layers: [bases.Satellite] });
-    L.control.layers(bases, null, { position: 'topright' }).addTo(amap);
+    layerCtl = L.control.layers(bases, null, { position: 'topright', collapsed: true }).addTo(amap);
     L.control.scale({ imperial: false }).addTo(amap);
 
     drawn = L.featureGroup().addTo(amap);
@@ -1320,6 +1467,22 @@ async function jobWizard(existingId) {
       if (!lyr) return;
       a._layer = lyr; lyr._areaRef = a;
       drawn.addLayer(lyr); bindLayer(a, lyr);
+    });
+
+    /* Nepal airspace from /map/, best effort — a failure here must not
+       take the drawing tools down with it. */
+    nepalAirspace().then(air => {
+      airData = air;
+      const overlays = airspaceOverlays(air);
+      Object.entries(overlays).forEach(([label, grp]) => {
+        layerCtl.addOverlay(grp, label);
+        if (/Restricted|Firing|Control zones/.test(label)) grp.addTo(amap);
+      });
+      checkAirspace();
+    }).catch(err => {
+      const w = $('#am-warn');
+      if (w) { w.hidden = false; w.className = 'airwarn muted';
+               w.innerHTML = 'Airspace overlay unavailable (' + esc(err.message) + '). Check CAAN sources directly.'; }
     });
 
     /* Edit and delete come from Leaflet.draw; drawing is driven by the
@@ -1339,15 +1502,15 @@ async function jobWizard(existingId) {
       areas.push(a);
       drawn.addLayer(e.layer); bindLayer(a, e.layer);
       if (job.lat == null) { job.lat = a.lat; job.lng = a.lng; }
-      endDraw(); paintAreas();
+      endDraw(); paintAreas(); checkAirspace();
     });
     amap.on(L.Draw.Event.EDITED, e => {
       e.layers.eachLayer(l => { if (l._areaRef) syncLayer(l._areaRef, l); });
-      paintAreas();
+      paintAreas(); checkAirspace();
     });
     amap.on(L.Draw.Event.DELETED, e => {
       e.layers.eachLayer(l => { const i = areas.indexOf(l._areaRef); if (i > -1) areas.splice(i, 1); });
-      paintAreas();
+      paintAreas(); checkAirspace();
     });
 
     /* The modal animates in, so the map has to be told its real size. */
@@ -1372,6 +1535,25 @@ async function jobWizard(existingId) {
         ()  => toast('Could not get your location', 'bad'),
         { enableHighAccuracy: true, timeout: 8000 });
     };
+  }
+
+  /* Warns when a drawn area falls inside controlled or restricted
+     airspace. Advisory only — it is not a clearance. */
+  function checkAirspace() {
+    const w = $('#am-warn'); if (!w) return;
+    if (!airData) { w.hidden = true; return; }
+    const found = [];
+    areas.forEach(a => airspaceHits(a, airData).forEach(z => {
+      if (!found.some(f => f.z.name === z.name && f.a === a)) found.push({ a, z });
+    }));
+    if (!found.length) { w.hidden = true; w.innerHTML = ''; return; }
+    const worst = found.some(f => f.z.kind === 'restricted' || f.z.kind === 'firing');
+    w.hidden = false;
+    w.className = 'airwarn ' + (worst ? 'bad' : 'warn');
+    w.innerHTML = `<b>${worst ? 'Restricted airspace' : 'Controlled airspace'}</b> — `
+      + found.map(f => `${esc(typeInfo(f.a.area_type).label)} is inside <b>${esc(f.z.name)}</b>`
+          + (f.z.detail ? ` <span class="tiny">(${esc(f.z.detail)})</span>` : '')).join('; ')
+      + `. Advisory only — confirm with CAAN before flight.`;
   }
 
   function startDraw() {
