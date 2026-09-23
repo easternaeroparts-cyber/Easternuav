@@ -906,7 +906,7 @@ async function jobDetail(c, id) {
 
         <div class="card"><div class="hd"><h3>Job areas</h3>
           ${(areas || []).length ? `<span class="tiny muted">${(areas || []).length} recorded</span>` : ''}</div>
-          ${(areas || []).length ? '<div id="detailmap" class="jobmap small" style="border:0;border-radius:0"></div>' : ''}
+          ${(areas || []).length ? '<div id="detailmap" class="jobmap small" style="border:0;border-radius:0;height:300px;min-height:240px"></div>' : ''}
           <div class="bd tight">
           ${(areas || []).length ? (areas || []).map(a => {
             const info = typeInfo(a.area_type);
@@ -1114,7 +1114,7 @@ async function jobWizard(existingId) {
             <span class="tiny muted" id="am-hint"></span>
           </div>
         </div>
-        <div id="areamap" class="jobmap"></div>
+        <div id="areamap" class="jobmap" style="height:430px;min-height:280px"></div>
         <div id="arealist" class="stack" style="margin-top:13px"></div>
 
         <div class="divider"></div>

@@ -2,7 +2,7 @@
    The shell is cached so the app opens instantly and survives a dead
    signal in the field. Supabase calls are never cached: stale
    operational data is worse than no data. */
-const CACHE = 'euav-crm-v1';
+const CACHE = 'euav-crm-v3';
 const SHELL = [
   './',
   './index.html',
